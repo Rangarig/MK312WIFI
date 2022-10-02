@@ -2,19 +2,19 @@
 
 As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken
 
-This Project is based on the ESP8266-01S
-This was created because bluetooth could not be accessed in a convinient way by the VR Headset I was using.
+This Project is based on the ESP8266-01S  
+This was created because bluetooth could not be accessed in a convinient way by the VR Headset I was using.  
 
 ## Folders:
-MK312Wifi - Contains the ino file that should be used to flash the ESP
-MK312-wifi-pcb - Contains the files needed to print the PCB
-DotNetClient - Example implementation in .net (visual studio code)
+MK312Wifi - Contains the ino file that should be used to flash the ESP  
+MK312-wifi-pcb - Contains the files needed to print the PCB  
+DotNetClient - Example implementation in .net (visual studio code)  
 
 ## General:
 The wifi interface, once established is byte compatible to the established bluetooth interface, with some extensions, to make
-custom implementations more easy.
-Included is an example C# implementation, that will be used in a unity project that this was created for. It should simplyfy talking to the device.
-However, most existing implementations should be really easy to adapt to the wifi version.
+custom implementations more easy.  
+Included is an example C# implementation, that will be used in a unity project that this was created for. It should simplyfy talking to the device.  
+However, most existing implementations should be really easy to adapt to the wifi version.  
 
 To make things configuration free the firmware features an UDP port for automatically determining the IP Address of the WIFI adapter as well
 as a TCP port for the actual communication with the device. At any time, only one client can be connected.
@@ -22,9 +22,9 @@ as a TCP port for the actual communication with the device. At any time, only on
 You can see a connection by the radio LED lighting up and then flashing as communication is in progress.
 
 ## Hardware:
-Feel free to use the provided PCB layout for the connections. In case you want to build your own:
-Keep in mind that the VCC from the box is 5 Volts, so you will need to convert that to 3.3 or you will burn your ESP module.
-The Signal levels conviniently are already at 3.3 volts so we don't really need to do anything here.
+Feel free to use the provided PCB layout for the connections. In case you want to build your own:  
+Keep in mind that the VCC from the box is 5 Volts, so you will need to convert that to 3.3 or you will burn your ESP module.  
+The Signal levels conviniently are already at 3.3 volts so we don't really need to do anything here.  
 Connections are:
 MK312 GND               -> ESP Pin1 GND
     3.3v                -> ESP Pin8 VCC
@@ -50,7 +50,7 @@ You can then create a TCP connection to that IP Address on port 8843.
 ### Normal encrypted mode:
 you can then proceed just like you would with a serial connection, and send the 0x00 to recieve 0x07 and then do the key negotation
 ### Unencrypted mode:
-if you wish to skip encryption, instead of the normal negotiation command you need to send 0x2f 0x42 0x42. This is an invalid checksum, but the command will be recogniced by the device.
+if you wish to skip encryption, instead of the normal negotiation command you need to send 0x2f 0x42 0x42. This is an invalid checksum, but the command will be recogniced by the device.  
 It will reply with 0x69. From there on you do not need to use any encryption.
 
 From here on communication is no different from the serial communication:
@@ -105,22 +105,22 @@ Once the ESP Powers up, it will immediately try to negotiate with the MK312. If 
 10 blinks: unexpected reply from poke operation  
 11 blinks: unexpected reply from peek operation  
 
-Once negotiations are successful, the WIFI module will power up. On first startup it will go into AP mode.
-Look for a network called 'MK312CONFIG-AP' and connect to it with your cellpone. Then set up the WIFI Parameters.
-The module will then connect to WIFI, and display its IP adress on the MK312's display.
-At this point it is ready to be connected to.
+Once negotiations are successful, the WIFI module will power up. On first startup it will go into AP mode.  
+Look for a network called 'MK312CONFIG-AP' and connect to it with your cellpone. Then set up the WIFI Parameters.  
+The module will then connect to WIFI, and display its IP adress on the MK312's display.  
+At this point it is ready to be connected to.  
 
 ## USAGE
 
-Using software implemented for it:
+Using software implemented for it:  
 - No configuration neccessary. The software will determine the IP via UDP broadcast and then connect to it. See example c# application.
 - List of implementations follows
 
-Using legacy bluetooth software:
+Using legacy bluetooth software:  
 ### Linux
 In linux you can use socat to establish a connection to the device, and offer a comport for the legacy software to connect to. 
 The syntax is as follows (replace [] with the corresponding values):
-socat -v pty,link=/home/[user]/tcptty0,raw tcp:[IP Address shown on display]:8843
+socat -v pty,link=/home/[user]/tcptty0,raw tcp:[IP Address shown on display]:8843  
 
 you can then connect to /home/[user]/tcptty0 from your software.
 
