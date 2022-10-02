@@ -27,17 +27,11 @@ Keep in mind that the VCC from the box is 5 Volts, so you will need to convert t
 The Signal levels conviniently are already at 3.3 volts so we don't really need to do anything here.
 Connections are:
 MK312 GND               -> ESP Pin1 GND
-
     3.3v                -> ESP Pin8 VCC
-    
 	                -> ESP Pin4 CHIP_EN
-			
 MK312 RX                -> ESP Pin5 GPIO0
-
 MK312 TX                -> ESP Pin3 GPIO2
-
 MK312 STATE             -> ESP Pin2 GPIO1
-
 GND -> resetwifi button -> ESP Pin7 GPIO3
 
 
@@ -68,30 +62,22 @@ Serial software implementations should not notice the difference. Once connectio
 
 Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.
 Components:
-1x ESP8266-01S module
-
-2x 100uF (104) Capacitors
-
-1x Diode
-
-1x Switch
-
-1x 5 pin connector, angled
-
-1x 2x4 pin socket, angled, alternatively 2x4 pin socket, see both screenshots.
+1x ESP8266-01S module  
+2x 100uF (104) Capacitors  
+1x Diode  
+1x Switch  
+1x 5 pin connector, angled  
+1x 2x4 pin socket, angled, alternatively 2x4 pin socket, see both screenshots.  
 
 
 ** Flashing:
 Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in 3.3VOLTS MODE. 
 The ESP8266-01 can be programmed from the arduino software like this:
 
-TXD - o o - VCC
-
-PRG - o o - RST
-
-    - o o - VCC
-    
-GND - o o - TXD
+TXD - o o - VCC  
+PRG - o o - RST  
+--- - o o - VCC  
+GND - o o - TXD  
 
 
 To put the ESP into programming mode, keep PRG connected to ground, and make RST touch GND briefly to reset.
@@ -111,13 +97,13 @@ Once the ESP is programmed and attached to the board you can put it into the MK3
 
 Once the ESP Powers up, it will immediately try to negotiate with the MK312. If that fails, it will show an error message on the message LED:
 
-1 blink: Returned Checksum is invalid
-2 blinks: handshake fail step 1
-3 blinks: handshake fail step 2
-4 blinks: handshake fail step 3
-5 blinks: unexpected reply from device
-10 blinks: unexpected reply from poke operation
-11 blinks: unexpected reply from peek operation
+1 blink: Returned Checksum is invalid  
+2 blinks: handshake fail step 1  
+3 blinks: handshake fail step 2  
+4 blinks: handshake fail step 3  
+5 blinks: unexpected reply from device  
+10 blinks: unexpected reply from poke operation  
+11 blinks: unexpected reply from peek operation  
 
 Once negotiations are successful, the WIFI module will power up. On first startup it will go into AP mode.
 Look for a network called 'MK312CONFIG-AP' and connect to it with your cellpone. Then set up the WIFI Parameters.
