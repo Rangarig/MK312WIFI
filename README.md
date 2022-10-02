@@ -5,6 +5,8 @@ As usual no guarantees can be given, and also if you use this to injure yourself
 This Project is based on the ESP8266-01S  
 This was created because bluetooth could not be accessed in a convinient way by the VR Headset I was using.  
 
+This Project is a collaboration between Rangarig and cLx
+
 ## Folders:
 MK312Wifi - Contains the ino file that should be used to flash the ESP  
 MK312-wifi-pcb - Contains the files needed to print the PCB  
