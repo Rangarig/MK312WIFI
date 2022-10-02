@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name MK312-wifi-pcb)(type KiCad)(uri ${KIPRJMOD}/MK312-wifi-pcb.pretty)(options "")(descr ""))
+  (lib (name "ESP Wifi Interface")(type KiCad)(uri "${KIPRJMOD}/ESP Wifi Interface.pretty")(options "")(descr ""))
+)

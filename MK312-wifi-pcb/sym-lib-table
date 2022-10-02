@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name MK312-Wifi-rescue)(type Legacy)(uri ${KIPRJMOD}/MK312-Wifi-rescue.lib)(options "")(descr ""))
+  (lib (name esp)(type Legacy)(uri ${KIPRJMOD}/esp.lib)(options "")(descr ""))
+)
