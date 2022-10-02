@@ -26,13 +26,13 @@ Feel free to use the provided PCB layout for the connections. In case you want t
 Keep in mind that the VCC from the box is 5 Volts, so you will need to convert that to 3.3 or you will burn your ESP module.  
 The Signal levels conviniently are already at 3.3 volts so we don't really need to do anything here.  
 Connections are:
-MK312 GND               -> ESP Pin1 GND
-    3.3v                -> ESP Pin8 VCC
-	                -> ESP Pin4 CHIP_EN
-MK312 RX                -> ESP Pin5 GPIO0
-MK312 TX                -> ESP Pin3 GPIO2
-MK312 STATE             -> ESP Pin2 GPIO1
-GND -> resetwifi button -> ESP Pin7 GPIO3
+MK312 GND               -> ESP Pin1 GND  
+    3.3v                -> ESP Pin8 VCC  
+	                -> ESP Pin4 CHIP_EN  
+MK312 RX                -> ESP Pin5 GPIO0  
+MK312 TX                -> ESP Pin3 GPIO2  
+MK312 STATE             -> ESP Pin2 GPIO1  
+GND -> resetwifi button -> ESP Pin7 GPIO3  
 
 
 The hardware serial port outputs a lot of garbage in the bootloader, that can confuse the MK312, so a software implementation is used that might make the used pin seem a bit odd.
