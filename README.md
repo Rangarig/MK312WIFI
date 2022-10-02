@@ -62,8 +62,8 @@ Serial software implementations should not notice the difference. Once connectio
 
 ## Building:
 
-Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.
-Components:
+Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.  
+Components:  
 1x ESP8266-01S module  
 2x 100uF (104) Capacitors  
 1x Diode  
