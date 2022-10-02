@@ -73,8 +73,8 @@ Components:
 
 
 ** Flashing:
-Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in 3.3VOLTS MODE. 
-The ESP8266-01 can be programmed from the arduino software like this:
+Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in **3.3VOLTS MODE** or it will die.   
+The ESP8266-01 can be programmed from the arduino software connected like this:
 
 |Left|Pins|Right|
 |---|---|---|
