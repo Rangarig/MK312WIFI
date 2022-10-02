@@ -76,7 +76,7 @@ The ESP8266-01 can be programmed from the arduino software like this:
 
 TXD - o o - VCC  
 PRG - o o - RST  
---- - o o - VCC  
+NON - o o - VCC  
 GND - o o - TXD  
 
 
