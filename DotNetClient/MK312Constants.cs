@@ -1,4 +1,7 @@
-namespace ButtWifiShock {
+using System;
+
+namespace RexLabsWifiShock
+{
 
     /// Implementation of the MK312 commands, basically just read and write byte
     public class MK312Constants {
@@ -396,7 +399,7 @@ namespace ButtWifiShock {
         /// </summary>
         public enum Mode : byte
         {
-            PowerOm = 0x00,         // MODE_NUM_POWER_ON
+            PowerOn = 0x00,         // MODE_NUM_POWER_ON
             Unknown = 0x01,         // MODE_NUM_UNKNOWN
             Waves = 0x76,           // MODE_NUM_WAVES / MODE_NUM_LOWER
             Stroke = 0x77,          // MODE_NUM_STROKE

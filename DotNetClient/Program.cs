@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RexLabsWifiShock;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using ButtWifiShock;
+
 
 namespace DotNetAdapter
 {
@@ -24,7 +25,7 @@ namespace DotNetAdapter
 
         {
             WifiComm comm = new WifiComm();
-            Functions mk312functions = new Functions(comm, false,true);
+            MK312Device mk312functions = new MK312Device(comm, false,true);
 
             mk312functions.connect();
             Console.WriteLine("Connected.");

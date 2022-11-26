@@ -1,4 +1,12 @@
-namespace ButtWifiShock {
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+
+namespace RexLabsWifiShock {
 
     /// Implementation of the MK312 commands, basically just read and write byte
     public class Commands {
@@ -8,6 +16,15 @@ namespace ButtWifiShock {
         public Commands(Protocol prot, IComm comm) {
             this.prot = prot;
             prot.setComm(comm);
+        }
+
+        /// <summary>
+        /// Returns the name of the connector of the comm interface
+        /// </summary>
+        /// <returns></returns>
+        public string getConnectorName()
+        {
+            return prot.getConnectorName();
         }
 
         /// Reads a memory address in the devices memory
@@ -64,7 +81,7 @@ namespace ButtWifiShock {
             prot.connect();
         }
 
-        public void disconnect() {
+        public virtual void disconnect() {
             prot.disconnect();
         }   
     }

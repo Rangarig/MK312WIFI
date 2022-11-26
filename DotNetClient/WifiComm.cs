@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
-namespace ButtWifiShock
+namespace RexLabsWifiShock
 {
 
     // This implemetnation of the comm class uses wifi to connect to the CLX/Rangarig ESP8266-01 sollution on the MK312
@@ -26,19 +28,29 @@ namespace ButtWifiShock
         private IPAddress ipAddress = null;  // IP Adress of the MK312 device
         private UdpClient udpClient = null; // The UDP Client used to figure out the IP address
 
+        public String GetConnectorName()
+        {
+            return "" + ipAddress;
+        }
         /// <summary>
         /// Waits for the IP Address answer after sending the UDP Request
         /// Then the global IP Address is set after successfully recieving 4 bytes
         /// </summary>
-        private void waitForIp()
+        private void WaitForIp()
         {
-            long timeout = System.Environment.TickCount + timeout_WaitForUDPReply;
-            var from = new IPEndPoint(0, 0);
-            while ((ipAddress == null) && (System.Environment.TickCount < timeout))
+            try
             {
-                var recvBuffer = udpClient.Receive(ref from);
-                if (recvBuffer.Length != 4) continue;
-                ipAddress = new IPAddress(recvBuffer);
+                long timeout = System.Environment.TickCount + timeout_WaitForUDPReply;
+                var from = new IPEndPoint(0, 0);
+                while ((ipAddress == null) && (System.Environment.TickCount < timeout))
+                {
+                    var recvBuffer = udpClient.Receive(ref from);
+                    if (recvBuffer.Length != 4) continue;
+                    ipAddress = new IPAddress(recvBuffer);
+                }
+            }
+            catch (Exception al)
+            {
             }
 
         }
@@ -47,16 +59,17 @@ namespace ButtWifiShock
         /// Determines the IP address of the hardware device by doing an UDP broadcast
         /// </summary>
         /// <returns>The IP Address</returns>
-        private IPAddress fetchIPAddress()
+        private IPAddress FetchIPAddress()
         {
             int timeout_at = System.Environment.TickCount + 60000; // The time we wait for an answer before we fail
             ipAddress = null;
+            // ipAddress = IPAddress.Parse("192.168.178.59"); <- Cheetah's old wifi firmware can't do autodiscover
             while (ipAddress == null)
             {
                 udpClient = new UdpClient();
                 udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, UDP_DiscoveryPort));
 
-                Thread thr = new Thread(new ThreadStart(waitForIp));
+                Thread thr = new Thread(new ThreadStart(WaitForIp));
                 thr.Start();
 
                 var data = Encoding.UTF8.GetBytes(MK312IDString);
@@ -78,20 +91,30 @@ namespace ButtWifiShock
         /// </summary>
         /// <param name="timeout">How long in ms to wait until we give up on recieving a byte</param>
        /// <returns>The byte that was read</returns>
-        public void readBytes(byte[] buffer, long timeout) {
+        public void ReadBytes(byte[] buffer, long timeout) {
             long timeout_at = System.Environment.TickCount + timeout; // We wait a maximum of one
             while (deviceSocket.Available < buffer.Length) {
                 //Console.WriteLine(deviceSocket.Available + " "  + buffer.Length);
                 if (System.Environment.TickCount > timeout_at) throw new TimeoutException("Timeout waiting for reply from Socket ("+timeout+"ms have passed)");
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
             int bytesRec1 = deviceSocket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
             if (bytesRec1 != buffer.Length)
                 throw new IOException("Not exactly one byte was returned from readbyte");
 
-            printBuffer('<', buffer);
+            //printBuffer('<', buffer);
 
         }
+
+        /// <summary>
+        /// Reads a single byte from the Socket with fixed timeout
+        /// </summary>
+        /// <param name="buffer"></param>
+        public void ReadBytes(byte[] buffer)
+        {
+            ReadBytes(buffer, 1000); // The defaut timeout waiting for an answer
+        }
+
 
         // Debug helper that prints a buffer to the console
         public static void printBuffer( char prefix , byte[] buffer) {
@@ -108,17 +131,17 @@ namespace ButtWifiShock
         /// Writes a number of bytes into the socket
         /// </summary>
         /// <param name="buffer">The data to be send, the length of the buffer will be sent</param>
-        public void writeBytes(byte[] buffer) {
+        public void WriteBytes(byte[] buffer) {
             deviceSocket.Send(buffer, buffer.Length, SocketFlags.None);
-            printBuffer('>', buffer);
+            //printBuffer('>', buffer);
         }
 
         /// <summary>
         /// Sets up a connection to the Device or returns with an exception
         /// </summary>
-        public void connect()
+        public void Connect()
         {
-            fetchIPAddress(); // Gets the IP Address or fails
+            FetchIPAddress(); // Gets the IP Address or fails
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, TCP_Port); // Okay, IP Address aquired
 
             Console.WriteLine("Connected:" + ipAddress);
@@ -141,14 +164,14 @@ namespace ButtWifiShock
         /// Queries the connected status of the comm connection
         /// </summary>
         /// <returns>true if a successful connection has been set up</returns>
-        public bool isConnected() {
+        public bool IsConnected() {
             return connected;
         }
 
         /// <summary>
         /// Closes the connection to the device
         /// </summary>
-        public void close() {
+        public void Close() {
             try
             {
                         deviceSocket.Shutdown(SocketShutdown.Both);

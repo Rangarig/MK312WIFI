@@ -1,4 +1,8 @@
-namespace ButtWifiShock {
+using System;
+using System.IO;
+
+namespace RexLabsWifiShock
+{
 
     /// Implementation of the MK312 Communication protocol
     public class Protocol {
@@ -17,6 +21,16 @@ namespace ButtWifiShock {
         public void setComm(IComm comm) {
             this.comm = comm;
         }
+
+        /// <summary>
+        /// Returns the name of the connector the protocoll uses for communication
+        /// </summary>
+        /// <returns></returns>
+        public string getConnectorName()
+        {
+            return this.comm.GetConnectorName();
+        }
+
 
         /// Instances the Protocol Class
         /// <param name="comm">The communication class to use e.g. WifiComm</param>
@@ -53,7 +67,7 @@ namespace ButtWifiShock {
             try
             {
                 byte[] readBuffer = new Byte[1];
-                while (true) comm.readBytes(readBuffer);
+                while (true) comm.ReadBytes(readBuffer);
             }
             catch (TimeoutException) // Once a timeout exception occurs we will know no more bytes are waiting... or something is seriously wrong, but the followupcalls should take care of that.
             {
@@ -69,8 +83,8 @@ namespace ButtWifiShock {
             sendBuffer[0] = send;
             byte[] reply = new byte[1];
             while (attempts > 0) {
-                comm.writeBytes(sendBuffer); // Send a 0 as a hello
-                comm.readBytes(reply);
+                comm.WriteBytes(sendBuffer); // Send a 0 as a hello
+                comm.ReadBytes(reply);
                 if (reply[0] == expect) break;
                 attempts--;
             }
@@ -81,19 +95,19 @@ namespace ButtWifiShock {
         private void negotiateKeys() {
             if (!encryptionEnabled) {
                 byte[] sendBufferNE = {0x2f,0x42,0x42};
-                comm.writeBytes(sendBufferNE);
+                comm.WriteBytes(sendBufferNE);
                 byte[] readBufferNE = new byte[1];
-                comm.readBytes(readBufferNE);
+                comm.ReadBytes(readBufferNE);
                 if (readBufferNE[0] != 0x69) throw new Exception("Failed to establish non encryption mode");
             }
             // Send key negotiation
             byte[] sendBuffer = {0x2f,hostkey,0xff};
             addChecksum(sendBuffer);
-            comm.writeBytes(sendBuffer);
+            comm.WriteBytes(sendBuffer);
 
             // Read the systems reply
             byte[] readBuffer = new byte[3];
-            comm.readBytes(readBuffer);
+            comm.ReadBytes(readBuffer);
             checkChecksum(readBuffer);
 
             // Recieve the key from the box
@@ -105,7 +119,7 @@ namespace ButtWifiShock {
 
         /// Sets up communication to the device and does the initial handshake
         public void connect() {
-            comm.connect();
+            comm.Connect();
             flushIncoming(); // Look for a clean start
             //if (encryptionEnabled) {
             handshake(0x00,0x07);
@@ -118,14 +132,14 @@ namespace ButtWifiShock {
 
         /// Closes the connection to the device
         public void disconnect() {
-            comm.close();
+            comm.Close();
             boxkey = 0;
             connected = false;
         }
 
         // Returns true if the connection is established and ready to recieve commands
         public bool isConnected() {
-            if (!comm.isConnected()) return false;
+            if (!comm.IsConnected()) return false;
             return connected;
         }
 
@@ -135,19 +149,19 @@ namespace ButtWifiShock {
             //WifiComm.printBuffer('c', buffer);
 
             encrypt(buffer); // Encrypts the buffer
-            comm.writeBytes(buffer); // Sends the buffer
+            comm.WriteBytes(buffer); // Sends the buffer
         }
 
         // Waits for a reply from the box
         public void recieveReply(byte[] buffer) {
-            comm.readBytes(buffer); // Receives the expected number of bytes
+            comm.ReadBytes(buffer); // Receives the expected number of bytes
             checkChecksum(buffer); // Checks the checksum
         }
 
         // Waits for a single reply byte, no checksum check
         public byte recieveSingleByteReply() {
             byte[] reply = new byte[1];
-            comm.readBytes(reply);
+            comm.ReadBytes(reply);
             return reply[0];
         }
 

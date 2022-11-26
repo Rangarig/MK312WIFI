@@ -1,23 +1,36 @@
+using System;
 using System.Text;
+using System.Threading;
 
-namespace ButtWifiShock {
+namespace RexLabsWifiShock
+{
 
     /// Implementation of the MK312 commands, basically just read and write byte
-    public class Functions {
+    public class MK312Device {
 
         private Commands cmd = null; // The protocol to communicate with the device
         private double _fade = 0.5;
+        private Boolean balance = false; // Makes the two channels be inverted to each other
 
-        public Functions(Commands cmd) {
+        public MK312Device(Commands cmd) {
             this.cmd = cmd;
         }
 
-        public Functions(IComm icomm, bool useEncryption, bool threadsafe) {
+        public MK312Device(IComm icomm, bool useEncryption, bool threadsafe) {
             Protocol prot = new Protocol(useEncryption);
             if (!threadsafe)
                 cmd = new Commands(prot,icomm);
             else
                 cmd = new ThreadSafeCommands(prot,icomm);
+        }
+
+        /// <summary>
+        /// Returns the name of the connector the protocol communicates through
+        /// </summary>
+        /// <returns></returns>
+        public string getConnectorName()
+        {
+            return cmd.getConnectorName();
         }
 
 
@@ -98,16 +111,17 @@ namespace ButtWifiShock {
 
         // Initializes channels
         public void initializeChannels() {
-            execute(MK312Constants.BoxCommand.FavouriteMode);
+            setMode(MK312Constants.Mode.PowerOn);
             cmd.poke((uint)MK312Constants.RAM.ChannelAGateSelect, (byte)MK312Constants.Gate.Off);
             cmd.poke((uint)MK312Constants.RAM.ChannelBGateSelect, (byte)MK312Constants.Gate.Off);
             cmd.poke((uint)MK312Constants.RAM.ChannelAIntensitySelect, (byte)MK312Constants.Select.Static);
             cmd.poke((uint)MK312Constants.RAM.ChannelBIntensitySelect, (byte)MK312Constants.Select.Static);
             cmd.poke((uint)MK312Constants.RAM.ChannelAIntensity, 0);
             cmd.poke((uint)MK312Constants.RAM.ChannelBIntensity, 0);
-            cmd.poke((uint)MK312Constants.RAM.ChannelARampValue, 255);
-            cmd.poke((uint)MK312Constants.RAM.ChannelAFrequencySelect, (byte)MK312Constants.Select.MA);
-            cmd.poke((uint)MK312Constants.RAM.ChannelBFrequencySelect, (byte)MK312Constants.Select.MA);
+            cmd.poke((uint)MK312Constants.RAM.ChannelAFrequencySelect, (byte)MK312Constants.Select.Static);
+            cmd.poke((uint)MK312Constants.RAM.ChannelBFrequencySelect, (byte)MK312Constants.Select.Static);
+            cmd.poke((uint)MK312Constants.RAM.ChannelAFrequency, 30);
+            cmd.poke((uint)MK312Constants.RAM.ChannelBFrequency, 15);
             cmd.poke((uint)MK312Constants.RAM.ChannelAWidthSelect, (byte)MK312Constants.Select.Advanced);
             cmd.poke((uint)MK312Constants.RAM.ChannelBWidthSelect, (byte)MK312Constants.Select.Advanced);
         }
@@ -133,13 +147,17 @@ namespace ButtWifiShock {
         }
 
 
-        // Sets the intensity of the second port (0-100)
+        // Sets the intensity of the second port (0-1)
         public void setChannelBLevel(double b) {
             // Check Limits
             if (b < 0) b = 0;
             if (b > 1) b = 1;
             // Do Value correction
-            double valueB = 115 + (80 * _fade) + ((100 - (b * 100)) * 64 / 100);
+            double valueB = 0;
+            if (balance)
+                valueB = 115 + (80 * _fade) + ((100 - (b * 100)) * 64 / 100);
+            else
+                valueB = 115 + (80 * _fade) + ((b * 100) * 64 / 100);
 
             setChannel((uint)MK312Constants.RAM.ChannelBIntensity,valueB);
         }

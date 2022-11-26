@@ -1,4 +1,14 @@
-namespace ButtWifiShock {
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+
+namespace RexLabsWifiShock
+{
 
 
     // A thread safe version of the commands class that has one thread polling a command queue
@@ -66,8 +76,10 @@ namespace ButtWifiShock {
             }
         }
 
-        public void close() {
+        public override void disconnect()
+        {
             running = false;
+            base.disconnect();
         }
 
         /// Reads a memory address in the devices memory
