@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetClient", "DotNetClient.csproj", "{E17809EF-93BC-44FC-B911-1C508D18F6E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetExample", "DotNetExample\DotNetExample.csproj", "{06A97230-C4C2-452B-A254-EFBC85D154F8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MK312WifiLibDotNet", "MK312WifiDotNetLib\MK312WifiLibDotNet.csproj", "{16455836-33E0-40CC-8F22-25ADE76F90D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E17809EF-93BC-44FC-B911-1C508D18F6E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E17809EF-93BC-44FC-B911-1C508D18F6E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E17809EF-93BC-44FC-B911-1C508D18F6E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E17809EF-93BC-44FC-B911-1C508D18F6E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06A97230-C4C2-452B-A254-EFBC85D154F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06A97230-C4C2-452B-A254-EFBC85D154F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06A97230-C4C2-452B-A254-EFBC85D154F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06A97230-C4C2-452B-A254-EFBC85D154F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16455836-33E0-40CC-8F22-25ADE76F90D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16455836-33E0-40CC-8F22-25ADE76F90D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16455836-33E0-40CC-8F22-25ADE76F90D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16455836-33E0-40CC-8F22-25ADE76F90D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
