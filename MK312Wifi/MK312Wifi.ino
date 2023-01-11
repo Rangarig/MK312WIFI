@@ -448,8 +448,7 @@ void handleUDP() {
       Udp.write(ip[1]);
       Udp.write(ip[2]);
       Udp.write(ip[3]);
-      Udp.flush();
-      Udp.endPacket();
+      Udp.endPacket(); // "flush" the output as we're sending the packet UDP now
     }
   }
 
