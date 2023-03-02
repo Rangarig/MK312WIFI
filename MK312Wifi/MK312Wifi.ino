@@ -9,7 +9,7 @@
 #include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
 
-#define VERSION 1.2
+#define VERSION 1.2.01
 #define AP_NAME "MK312CONFIG-AP"
 
 #define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
@@ -135,7 +135,8 @@ void wifi_setup() {
   wifiManager.setDebugOutput(false);
   wifiManager.setAPCallback(configModeCallback);
   wifiManager.autoConnect(AP_NAME);
- 
+
+  bool statusled = false;
   while (WiFi.status() != WL_CONNECTED) {
     delay(2000);
     statusled = !statusled;
@@ -157,7 +158,7 @@ void mk312_setup() {
   delay(10);
   while (mySerial.available() > 0) mySerial.read();
   
-  byte rep = 00;
+  byte rep = 0x00;
 
   byte attempts = 12;
   while (attempts > 0) {
@@ -228,7 +229,7 @@ void loop() {
   checkForAP();
 }
 
-int wifiEncryption = -1; // Do we use encryption on wifi side?
+bool wifiEncryption = false; // Do we use encryption on wifi side?
 
 // Waits for a byte from wifi and returns it
 byte wifiread(WiFiClient client) {
@@ -239,7 +240,7 @@ byte wifiread(WiFiClient client) {
     if (millis() > timeout)
       return -1;
   } 
-  if (wifiEncryption == 1)
+  if (wifiEncryption)
     return client.read() ^ wifikey; // Decrypt
   else
     return client.read();
@@ -261,11 +262,8 @@ void handleTCPIP() {
  
   if (client) {
     client.setNoDelay(true);
-    //Serial.begin(19200);
-
     setStatusLed(true);
-
-    wifiEncryption = 1;
+    wifiEncryption = true;
     wifikey = 0;
         
     while (client.connected()) {
@@ -298,7 +296,7 @@ void handleTCPIP() {
 
             // If key and checksum are 0x42 encryption is disabled
             if ((val1 == 0x42) && (chk == 0x42)) {
-              wifiEncryption = 0;
+              wifiEncryption = false;
               client.write(0x69); // Reply code, key accepted
               client.flush();
               continue;              
@@ -384,8 +382,8 @@ void handleTCPIP() {
             // TODO: Theoretically someone could write to 4213 by a command writing several bytes
             // But nobody would do that... right? RIGHT?
             if ((val1 == 4) && (hi == 0x42) && (lo == 0x13)) {
-                wifikey = readbuf[0];
-                client.write(0x06); // OK, we changed the local key
+              wifikey = readbuf[0];
+              client.write(0x06); // OK, we changed the local key
               continue;
             } 
             mk312write_enc(cmd);
