@@ -9,42 +9,40 @@
 #include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
 
-#define version 1.2
-#define ap_name "MK312CONFIG-AP"
+#define VERSION 1.2
+#define AP_NAME "MK312CONFIG-AP"
 
-// The port to listen to UDP to, so devices can find the interface
-#define udpdiscoveryport 8842
-#define commport 8843
+#define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
+#define COMM_PORT          8843 // main communication port in TCP
 
-#define ledpin 1 //- pin to radio led (we use TX, since the system will output garbage on start, and we do not want to confuse the mk312)
-#define rxpin 0 // rx pin to be used by the software implementation
-#define resetwifipin 3 // The pin that needs to be pushed to ground to reset the wifi settings
-#define txpin 2 // tx pin to be used by the software implementation
+#define LED_PIN               1 // cathode pin of the radio LED (we use TX, since the system will output garbage on start, and we do not want to confuse the mk312)
+#define RX_PIN                0 // rx pin to be used by the software implementation
+#define RESET_WIFI_PIN        3 // The pin that needs to be pushed to ground to reset the wifi settings
+#define TX_PIN                2 // tx pin to be used by the software implementation
 
-#define fail_checksum 1
-#define fail_handshake_a 2
-#define fail_handshake_b 3
-#define fail_handshake_c 4
-#define fail_reply 5
-#define fail_peekreply 10
-#define fail_pokereply 11
+#define FAIL_CHECKSUM         1
+#define FAIL_HANDSHAKE_A      2
+#define FAIL_HANDSHAKE_B      3
+#define FAIL_HANDSHAKE_C      4
+#define FAIL_REPLY            5
+#define FAIL_PEEKREPLY       10
+#define FAIL_POKEREPLY       11
 
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE + 1]; //buffer to hold incoming packet,
 bool statusled = false;
 
-WiFiServer wifiServer(commport); // The wifiserver, that sends data and receives controls
-WiFiUDP Udp; // The UDP Server that is used to tell the client the IP Address
+WiFiServer wifiServer(COMM_PORT); // The wifiserver, that sends data and receives controls
+WiFiUDP udp; // The UDP Server that is used to tell the client the IP Address
+SoftwareSerial mySerial(RX_PIN, TX_PIN, false);
 
 void setStatusLed(bool status) {
   if (status) {
-    digitalWrite(ledpin, HIGH);   // turn the LED on (HIGH is the voltage level)
+   digitalWrite(LED_PIN, HIGH);   // turn the LED on (HIGH is the voltage level)
   }
   else {
-    digitalWrite(ledpin, LOW);   // turn the LED off (LOW is the voltage level)
+   digitalWrite(LED_PIN, LOW);   // turn the LED off
   }
 }
-
-SoftwareSerial mySerial(rxpin, txpin, false); // RX, TX
 
 byte mk312key = 0; // The key to be used to talk to the mk312
 #define mk312hostkey 0 // The host key to be transmitted to the mk312
@@ -76,9 +74,9 @@ int mk312read() {
 void errorstate(byte e) {
   while (true) {
     for (byte i=0;i<e;i++) {
-      digitalWrite(ledpin, HIGH);   // turn the LED on (HIGH is the voltage level)
+      digitalWrite(LED_PIN, HIGH);   // turn the LED on
       delay(300);
-      digitalWrite(ledpin, LOW);
+      digitalWrite(LED_PIN, LOW);    // turn the LED off
       delay(150); 
     }
     delay(2000);
@@ -94,7 +92,7 @@ void poker(int addr, byte b) {
   mk312write_enc(hi);
   mk312write_enc(b);
   mk312write_enc((0x4d + lo + hi + b) % 256);
-  if (mk312read()!=0x06) errorstate(fail_pokereply);
+  if (mk312read()!=0x06) errorstate(FAIL_POKEREPLY);
 }
 
 // Peeks an address from the memory of the device
@@ -105,10 +103,10 @@ byte peeker(int addr) {
   mk312write_enc(lo);
   mk312write_enc(hi);
   mk312write_enc((0x3c + lo + hi) % 256);
-  if (mk312read()!=0x22) errorstate(fail_peekreply);
+  if (mk312read()!=0x22) errorstate(FAIL_PEEKREPLY);
   byte val = mk312read();
   byte chk = mk312read();
-  if (((val + 0x22) % 256) != chk) errorstate(fail_checksum);
+  if (((val + 0x22) % 256) != chk) errorstate(FAIL_CHECKSUM);
   return val;
 }
 
@@ -138,7 +136,7 @@ void wifi_setup() {
   WiFiManager wifiManager;
   wifiManager.setDebugOutput(false);
   wifiManager.setAPCallback(configModeCallback);
-  wifiManager.autoConnect(ap_name);
+  wifiManager.autoConnect(AP_NAME);
  
   while (WiFi.status() != WL_CONNECTED) {
     delay(2000);
@@ -147,7 +145,7 @@ void wifi_setup() {
   }
 
   setStatusLed(false); 
-  Udp.begin(udpdiscoveryport);
+  udp.begin(UDP_DISCOVERY_PORT);
   wifiServer.begin();
 }
 
@@ -173,7 +171,7 @@ void mk312_setup() {
     if (rep == 0x07) break;
   }
 
-  if (attempts == 0) errorstate(fail_handshake_a); // Failed waiting for 7
+  if (attempts == 0) errorstate(FAIL_HANDSHAKE_A); // Failed waiting for 7
 
   mk312key = 0x00;
 
@@ -187,8 +185,8 @@ void mk312_setup() {
   byte boxkey = mk312read();
   byte check = mk312read();
 
-  if (rep != 0x21) errorstate(fail_handshake_b); // handshake fail
-  if (check != (rep + boxkey)) errorstate(fail_checksum); // checksum fail 
+  if (rep != 0x21) errorstate(FAIL_HANDSHAKE_B); // handshake fail
+  if (check != (rep + boxkey)) errorstate(FAIL_CHECKSUM); // checksum fail 
 
   // Store the encryption key for later use
   mk312key = boxkey ^ 0x55;
@@ -196,14 +194,14 @@ void mk312_setup() {
 
 void setup() {
   // Check if WIFI needs a reset
-  pinMode(resetwifipin, INPUT);
+  pinMode(RESET_WIFI_PIN, INPUT);
 
   // Initialize serial
-  pinMode(ledpin, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
   
   mySerial.begin(19200);
-  pinMode(txpin, OUTPUT);
-  pinMode(rxpin, INPUT); // For some reason the ESP insists on a pullup for the RX pin, which will then not be understood, so... we rectify that.
+  pinMode(TX_PIN, OUTPUT);
+  pinMode(RX_PIN, INPUT); // For some reason the ESP insists on a pullup for the RX pin, which will then not be understood, so... we rectify that.
 
   // Setup communications with the MK312
   mk312_setup();
@@ -218,7 +216,7 @@ void setup() {
 
 // Checks if the AP button is pressed
 void checkForAP() {
-    bool resetWifi = !digitalRead(resetwifipin);
+    bool resetWifi = !digitalRead(RESET_WIFI_PIN);
     if (resetWifi) {
       writeText("WifiAP");
       WiFiManager wifiManager;
@@ -422,21 +420,21 @@ void handleTCPIP() {
 
 void handleUDP() {
   // if there's data available, read a packet
-  int packetSize = Udp.parsePacket();
+  int packetSize = udp.parsePacket();
   if (packetSize) {
     // read the packet into packetBufffer
-    int n = Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+    int n = udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
     packetBuffer[n] = 0;
 
     if(strcmp(packetBuffer, "ICQ-MK312") == 0) {
       // send a reply, to the IP address and port that sent us the packet we received
-      Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+      udp.beginPacket(udp.remoteIP(), udp.remotePort());
       IPAddress ip = WiFi.localIP();
-      Udp.write(ip[0]);
-      Udp.write(ip[1]);
-      Udp.write(ip[2]);
-      Udp.write(ip[3]);
-      Udp.endPacket(); // "flush" the output as we're sending the packet UDP now
+      udp.write(ip[0]);
+      udp.write(ip[1]);
+      udp.write(ip[2]);
+      udp.write(ip[3]);
+      udp.endPacket(); // "flush" the output as we're sending the packet UDP now
     }
   }
 
