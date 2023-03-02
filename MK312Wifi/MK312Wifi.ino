@@ -211,7 +211,7 @@ void setup() {
   // Ready for incoming connections
   wifi_setup();
   IPAddress ip = WiFi.localIP();
-  char s[16];
+  char s[17];
   sprintf(s, ">%i.%i.%i.%i", ip[0],ip[1],ip[2],ip[3]);
   writeText(s);
 }
