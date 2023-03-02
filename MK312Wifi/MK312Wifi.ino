@@ -28,8 +28,7 @@
 #define FAIL_PEEKREPLY       10
 #define FAIL_POKEREPLY       11
 
-char packetBuffer[UDP_TX_PACKET_MAX_SIZE + 1]; //buffer to hold incoming packet,
-bool statusled = false;
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE + 1]; // buffer to hold incoming packet,
 
 WiFiServer wifiServer(COMM_PORT); // The wifiserver, that sends data and receives controls
 WiFiUDP udp; // The UDP Server that is used to tell the client the IP Address
@@ -37,15 +36,14 @@ SoftwareSerial mySerial(RX_PIN, TX_PIN, false);
 
 void setStatusLed(bool status) {
   if (status) {
-   digitalWrite(LED_PIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+    digitalWrite(LED_PIN, HIGH);   // turn the LED on (HIGH is the voltage level)
   }
   else {
-   digitalWrite(LED_PIN, LOW);   // turn the LED off
+    digitalWrite(LED_PIN, LOW);   // turn the LED off
   }
 }
 
 byte mk312key = 0; // The key to be used to talk to the mk312
-#define mk312hostkey 0 // The host key to be transmitted to the mk312
 byte wifikey = 0;  // The key used when we are talked to from wifi
 
 // Writes a byte to the mk312
@@ -229,7 +227,6 @@ void loop() {
   handleTCPIP();
   checkForAP();
 }
-bool toggle = false;
 
 int wifiEncryption = -1; // Do we use encryption on wifi side?
 
@@ -256,12 +253,9 @@ void handleTCPIP() {
   byte lo = 0; // Lo address
   byte chk = 0; // Checksum
   byte rep = 0; // Reply byte
-  byte idx = 0; // Index to buffer
   byte readbuf[16]; // Read buffer for write byte passthrough
   long chksum = 0; // Checksum for readbuffer
-  
   bool status = false;
-  long next_blink = 0;
   
   WiFiClient client = wifiServer.available();
  
@@ -437,5 +431,4 @@ void handleUDP() {
       udp.endPacket(); // "flush" the output as we're sending the packet UDP now
     }
   }
-
 }
