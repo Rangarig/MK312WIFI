@@ -112,9 +112,8 @@ byte peeker(int addr) {
   return val;
 }
 
-// WriteToScreen
-void writeText(char myMsg[]) {
-  
+// Write to screen
+void writeText(const char myMsg[]) {
   int len = strlen(myMsg);
 
   for (int i=0;i<len;i++) {
