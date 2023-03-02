@@ -1,10 +1,13 @@
+/* 
+ *  MK-312 Wifi interface
+ *  This project is hosted here: https://github.com/Rangarig/MK312WIFI
+ */
+
 #include "ESP8266WiFi.h"
-//#include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <SoftwareSerial.h>
-#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
-//#include <Wire.h>
 
 #define version 1.2
 #define ap_name "MK312CONFIG-AP"
@@ -33,14 +36,11 @@ WiFiServer wifiServer(commport); // The wifiserver, that sends data and receives
 WiFiUDP Udp; // The UDP Server that is used to tell the client the IP Address
 
 void setStatusLed(bool status) {
-if (status) {
-   digitalWrite(ledpin, HIGH);   // turn the LED on (HIGH is the voltage level)
-   //digitalWrite(intledpin, HIGH);   // turn the LED on (HIGH is the voltage level)
-    
-  } else {
-   digitalWrite(ledpin, LOW);   // turn the LED on (HIGH is the voltage level)
-   //digitalWrite(intledpin, LOW);   // turn the LED on (HIGH is the voltage level)
-    
+  if (status) {
+    digitalWrite(ledpin, HIGH);   // turn the LED on (HIGH is the voltage level)
+  }
+  else {
+    digitalWrite(ledpin, LOW);   // turn the LED off (LOW is the voltage level)
   }
 }
 
@@ -116,6 +116,7 @@ byte peeker(int addr) {
 void writeText(const char myMsg[]) {
   int len = strlen(myMsg);
 
+  // display the message text...
   for (int i=0;i<len;i++) {
     poker(0x4180,myMsg[i]);
     poker(0x4181,64+i);
@@ -123,13 +124,13 @@ void writeText(const char myMsg[]) {
     while (peeker(0x4070) != 0xff) delay(1);
   }
 
+  // ... then clear the rest of the screen's line with spaces
   for (int i=len;i<16;i++) {
     poker(0x4180,' ');
     poker(0x4181,64+i);
     poker(0x4070,0x13);
     while (peeker(0x4070) != 0xff) delay(1);
   }
-
 }
 
 // initializes wifi
@@ -148,13 +149,11 @@ void wifi_setup() {
   setStatusLed(false); 
   Udp.begin(udpdiscoveryport);
   wifiServer.begin();
-
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) {
   writeText("WifiAP");
 }
-
 
 // Establishes or reestablishes communication with the mk312 device
 void mk312_setup() {
@@ -198,8 +197,6 @@ void mk312_setup() {
 void setup() {
   // Check if WIFI needs a reset
   pinMode(resetwifipin, INPUT);
-  //pinMode(resetwifipin, OUTPUT);
-  //digitalWrite(resetwifipin, true);
 
   // Initialize serial
   pinMode(ledpin, OUTPUT);
@@ -236,7 +233,6 @@ void loop() {
 }
 bool toggle = false;
 
-//WiFiClient client;
 int wifiEncryption = -1; // Do we use encryption on wifi side?
 
 // Waits for a byte from wifi and returns it
@@ -255,7 +251,6 @@ byte wifiread(WiFiClient client) {
 }
 
 // Handles the incoming TCPIP requests
-
 void handleTCPIP() {
   byte cmd = 0; // conmmand read
   byte val1 = 0; // Value
@@ -289,10 +284,6 @@ void handleTCPIP() {
           wifikey = 0;
         }
         
-        //if (millis() > next_blink) {
-        //  next_blink = millis() + 500;
-       // }
-
         // Check if a control message has been sent
         while (client.available()>0) {
           cmd = wifiread(client);
@@ -367,16 +358,15 @@ void handleTCPIP() {
             client.write(val1);
             client.write(chk);
             client.flush();
-
             continue;
           }
+
           // Write byte command implementation
           if ((cmd & 0x0F) == 0x0D) { // write byte command
             val1 = (cmd & 0xF0) >> 4; // Number of bytes to write
 
             hi = wifiread(client);
             lo = wifiread(client);
-
 
             chksum = cmd + hi + lo;
 
@@ -391,7 +381,6 @@ void handleTCPIP() {
             //client.write(chk);
             //client.write(chksum % 256);
             
-
             // Make sure checksum is ok
             if ((chksum % 256) != chk) {
               client.write(0x07); // Wrong checksum
