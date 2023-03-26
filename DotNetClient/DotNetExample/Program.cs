@@ -1,4 +1,5 @@
-﻿using RexLabsWifiShock;
+﻿using MK312WifiLibDotNet;
+using RexLabsWifiShock;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,8 +26,9 @@ namespace DotNetAdapter
 
         {
             Console.WriteLine("Looking for Device...");
-            WifiComm comm = new WifiComm(); // Use the WIFI connection
-            MK312Device mk312Device = new MK312Device(comm, false,true);
+            //WifiComm comm = new WifiComm(); // Use the WIFI connection
+            SerialComm serComm = new SerialComm("COM3"); // Use Serial Connection, please keep in mind that will not work with non encryption.
+            MK312Device mk312Device = new MK312Device(serComm, true, true);
 
             mk312Device.connect();
             Console.WriteLine("Connected.");

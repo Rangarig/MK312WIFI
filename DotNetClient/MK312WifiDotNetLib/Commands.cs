@@ -19,6 +19,15 @@ namespace RexLabsWifiShock {
         }
 
         /// <summary>
+        /// Returns the protocol implementation
+        /// </summary>
+        /// <returns></returns>
+        public Protocol getProtocol()
+        {
+            return prot;
+        }
+
+        /// <summary>
         /// Returns the name of the connector of the comm interface
         /// </summary>
         /// <returns></returns>

@@ -1,3 +1,4 @@
+using MK312WifiLibDotNet;
 using System;
 using System.Text;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace RexLabsWifiShock
         }
 
         public MK312Device(IComm icomm, bool useEncryption, bool threadsafe) {
+            if ((!useEncryption) && (icomm is SerialComm)) throw new Exception("Non encrypted comm is not supported by RS232 Connections");
             Protocol prot = new Protocol(useEncryption);
             if (!threadsafe)
                 cmd = new Commands(prot,icomm);
@@ -102,6 +104,7 @@ namespace RexLabsWifiShock
 
         public void setEncryptionKey(byte key) {
             cmd.poke((uint)MK312Constants.RAM.BoxKey,key);
+            cmd.getProtocol().setEncryptionKey(key);
         }
 
         // Executes a command

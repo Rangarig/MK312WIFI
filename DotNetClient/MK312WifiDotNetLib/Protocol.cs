@@ -8,7 +8,7 @@ namespace RexLabsWifiShock
     public class Protocol {
         private IComm comm = null; // The Communication layer to the device
 
-        private bool encryptionEnabled = true; // Do we use the Encryptionless method (supported by RexLabs Wifi adapter)
+        private bool encryptionEnabled = true; // Do we use the Encryptionless method (only supported by RexLabs Wifi adapter)
         private byte boxkey = 0; // The key sent by the box
         private const byte hostkey = 0; // The key sent by us, 0 for simplicity
         private const byte extraEncryptKey = 0x55; // The key always added to the encryption
@@ -165,6 +165,14 @@ namespace RexLabsWifiShock
             return reply[0];
         }
 
+        /// <summary>
+        /// Allows for changing of the <see cref="boxkey"/>
+        /// </summary>
+        /// <param name="key">The box key</param>
+        public void setEncryptionKey(byte key)
+        {
+            encryptionKey = key;
+        }
     }
 
 
