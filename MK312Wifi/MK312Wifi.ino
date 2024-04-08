@@ -9,7 +9,7 @@
 #include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
 
-#define VERSION 1.2.01
+#define VERSION 1.2.02
 #define AP_NAME "MK312CONFIG-AP"
 
 #define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
@@ -305,9 +305,11 @@ void handleTCPIP() {
               continue;
             }
             wifikey = val1 ^ 0x55;
-            client.write(0x21); // Reply code, key accepted
-            client.write(0x00); // Our own "box" key, which for simplicity will always be 0
-            client.write(0x21); // The checksum
+            uint8_t response[3];
+            response[0] = 0x21; // Reply code, key accepted
+            response[1] = 0x00; // Our own "box" key, which for simplicity will always be 0
+            response[2] = 0x21; // The checksum
+            client.write(response, 3);
             continue;
           }
           // Read byte command
@@ -338,9 +340,8 @@ void handleTCPIP() {
               continue;
             }
 
-            client.write(rep);
-            client.write(val1);
-            client.write(chk);
+            uint8_t response[3] = {rep, val1, chk};
+            client.write(response, 3);
             continue;
           }
 
