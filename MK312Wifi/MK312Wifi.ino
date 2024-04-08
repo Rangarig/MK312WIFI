@@ -284,7 +284,6 @@ void handleTCPIP() {
           if (cmd == 0x00) {
             wifikey = 0;
             client.write(0x07);
-            client.flush();
             continue;
           }
 
@@ -303,14 +302,12 @@ void handleTCPIP() {
 
             if (chk != ((val1 + cmd) % 256)) {
               client.write(0x07); // Reply code, key accepted
-              client.flush();
               continue;
             }
             wifikey = val1 ^ 0x55;
             client.write(0x21); // Reply code, key accepted
             client.write(0x00); // Our own "box" key, which for simplicity will always be 0
             client.write(0x21); // The checksum
-            client.flush();
             continue;
           }
           // Read byte command
@@ -321,7 +318,6 @@ void handleTCPIP() {
 
             if (((cmd + lo + hi) % 256) != chk) {
               client.write(0x07); // Wrong checksum
-              client.flush();
               continue;
             }
 
@@ -339,14 +335,12 @@ void handleTCPIP() {
             // Verify reply
             if (((rep + val1) % 256) != chk) {
               client.write(0x07); // Wrong checksum
-              client.flush();
               continue;
             }
 
             client.write(rep);
             client.write(val1);
             client.write(chk);
-            client.flush();
             continue;
           }
 
@@ -370,7 +364,6 @@ void handleTCPIP() {
             // Make sure checksum is ok
             if ((chksum % 256) != chk) {
               client.write(0x07); // Wrong checksum
-              client.flush();
               continue;
             }
 
@@ -392,12 +385,10 @@ void handleTCPIP() {
 
             rep = mk312read();
             client.write(rep);
-            client.flush();
             continue;
           }
           wifikey=0;
           client.write(0x07);
-          client.flush();
           continue;
         }
     }
