@@ -25,15 +25,16 @@ Feel free to use the provided PCB layout for the connections. In case you want t
 Keep in mind that the VCC from the box is 5 volts, so you will need to convert that to 3.3V or you will burn your ESP module.
 The signal level from the box is already at 3.3 volts (as there is already a resistor bridge) so we don't really need to do anything else.
 Connections are:
-| ESP Pin#     | ESP Pin Name | In-between            | MK312
-|--------------|--------------|---------------- ------|-------
-| 1            | GND          |                       | GND
-| 8            | VCC          | 3.3V regulator        | VCC
-| 4            | CHIP_EN      |                       |
-| 5            | GPIO0        |                       | RX
-| 3            | GPIO2        |                       | TX
-| 2            | GPIO1        |                       | STATE
-| 7            | GPIO3        | AP mode switch to GND |
+
+| ESP Pin#     | ESP Pin Name | In-between            | MK312 |
+|--------------|--------------|-----------------------|-------|
+| 1            | GND          |                       | GND   |
+| 8            | VCC          | 3.3V regulator        | VCC   |
+| 4            | CHIP_EN      |                       |       |
+| 5            | GPIO0        |                       | RX    |
+| 3            | GPIO2        |                       | TX    |
+| 2            | GPIO1        |                       | STATE |
+| 7            | GPIO3        | AP mode switch to GND |       |
 
 The hardware serial port outputs a lot of garbage in the bootloader, that can confuse the MK312, so a software implementation is used that might make the used pin seem a bit odd.
 
