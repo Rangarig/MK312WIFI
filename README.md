@@ -1,19 +1,16 @@
 # MK312 Wifi Bridge
 
-As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken
+As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken.
 
-This Project is based on the ESP8266-01S  
-This was created because bluetooth could not be accessed in a convinient way by the VR Headset I was using.  
+This Project is based on the ESP8266-01S and is a collaboration between Rangarig and cLx. This was created at first because the bluetooth interface could not be accessed in a convinient way on a VR Headset.  
 
-This Project is a collaboration between Rangarig and cLx
-
-## Folders:
+## Contents
 MK312Wifi - Contains the ino file that should be used to flash the ESP  
 MK312-wifi-pcb - Contains the files needed to print the PCB  
 DotNetClient - Example implementation in .net (visual studio code)  
 
-## General:
-The wifi interface, once established is byte compatible to the established bluetooth interface, with some extensions, to make
+## General
+The wifi interface, once established is pin to pin compatible to the bluetooth interface, with some extensions, to make
 custom implementations more easy.  
 Included is an example C# implementation, that will be used in a unity project that this was created for. It should simplyfy talking to the device.  
 However, most existing implementations should be really easy to adapt to the wifi version.  
@@ -23,7 +20,7 @@ as a TCP port for the actual communication with the device. At any time, only on
 
 You can see a connection by the radio LED lighting up and then flashing as communication is in progress.
 
-## Hardware:
+## Hardware
 Feel free to use the provided PCB layout for the connections. In case you want to build your own:  
 Keep in mind that the VCC from the box is 5 Volts, so you will need to convert that to 3.3 or you will burn your ESP module.  
 The Signal levels conviniently are already at 3.3 volts so we don't really need to do anything here.  
@@ -41,7 +38,7 @@ Connections are:
 
 The hardware serial port outputs a lot of garbage in the bootloader, that can confuse the MK312, so a software implementation is used that might make the used pin seem a bit odd.
 
-## Firmware:
+## Firmware
 Upon first powerup, the device will go into an Access Point mode, which you can connect to with your cellphone, to connect it to your local wifi.
 The MK312 disply will show "WifiAP"
 Once a Wifi Connection is established, the device will display the IP Address on the LCD Display.
@@ -58,33 +55,38 @@ if you wish to skip encryption, instead of the normal negotiation command you ne
 It will reply with 0x69. From there on you do not need to use any encryption.
 
 From here on communication is no different from the serial communication:
-https://github.com/buttplugio/stpihkal/blob/master/stpihkal/protocols/erostek-et312b.md
+https://docs.buttplug.io/docs/stpihkal/protocols/erostek-et312b/
 
 Serial software implementations should not notice the difference. Once connection is lost, the software should be able to reestablish the connection normaly.
 
-## Building:
+## Building
 
 Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.
 Components:
-1x ESP8266-01S module
-1x AMS1117-3.3 regulator
-2x 100nF (104) capacitors
-1x 2N2222 transistor
-1x Switch
-1x 5 pins pin header, angled
-1x 2x4 pins socket
+
+|Qty| Component                 |
+|---|---------------------------|
+| 1 | ESP8266-01S module        |
+| 1 | AMS1117-3.3 regulator     |
+| 2 | 100nF (104) capacitors    |
+| 1 | 2N2222 transistor         | 
+| 1 | Tactile switch 6x6 mm     |
+| 1 | 5 pins pin header, angled |
+| 1 | 2x4 pins socket, angled   |
 
 
-** Flashing:
-Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in **3.3VOLTS MODE** or it will die.   
-The ESP8266-01 can be programmed from the arduino software connected like this:
+## Flashing the firmware
+Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in **3.3 VOLTS MODE** or it will die.   
+The ESP8266-01 can be programmed connected like this [TODO INSERT SCHEMATICS]
 
-|Left|Pins|Right|
-|---|---|---|
-|TXD|o o|VCC|  
-|PRG|o o|RST|  
-|   |o o|VCC|  
-|GND|o o|TXD|  
+|Row 1|Pins|Row 2|
+|-----|----|-----|
+|  TX |o  o| GND |  
+|  EN |o  o|     |  
+| RST |o  o| PRG |  
+|3.3V |o  o| RX  |  
+
+(ESP module top view, row 1 is closer to its board edge)
 
 To put the ESP into programming mode, keep PRG connected to ground, and make RST touch GND briefly to reset.
 
@@ -103,32 +105,40 @@ Once the ESP is programmed and attached to the board you can put it into the MK3
 
 Once the ESP Powers up, it will immediately try to negotiate with the MK312. If that fails, it will show an error message on the message LED:
 
-1 blink: Returned Checksum is invalid  
-2 blinks: handshake fail step 1  
-3 blinks: handshake fail step 2  
-4 blinks: handshake fail step 3  
-5 blinks: unexpected reply from device  
-10 blinks: unexpected reply from poke operation  
-11 blinks: unexpected reply from peek operation  
+| Number of blinks | Cause                                |
+|------------------|--------------------------------------|
+| 1                | Invalid checksum                     |
+| 2                | Handshake failed at step 1           |
+| 3                | Handshake failed at step 2           |
+| 4                | Handshake failed at step 3           |
+| 5                | Unexpected reply from device         |
+| 10               | Unexpected reply from poke operation |
+| 11               | Unexpected reply from peek operation |
 
 Once negotiations are successful, the WIFI module will power up. On first startup it will go into AP mode.  
 Look for a network called 'MK312CONFIG-AP' and connect to it with your cellpone. Then set up the WIFI Parameters.  
 The module will then connect to WIFI, and display its IP adress on the MK312's display.  
-At this point it is ready to be connected to.  
+At this point it is ready to be connected to. The network settings are saved to be used automatically the next time the box is switched on.
 
-## USAGE
+## Usage
 
-Using software implemented for it:  
-- No configuration neccessary. The software will determine the IP via UDP broadcast and then connect to it. See example c# application.
-- List of implementations follows
+### Using software implemented for it:
+There is no configuration necessary. The software will determine the IP via UDP broadcast and then connect to it.
 
-Using legacy bluetooth software:  
-### Linux
+List of implementations follows:
+  - See the example C# application
+  - https://github.com/clxjaguar/mk312-gui (PyQt GUI supporting cable link and unencrypted or legacy network links)
+
+### Using legacy cable or bluetooth software:
+There is software able to make a virtual serial port, which any software using serial port use. 
+#### Linux:
 In linux you can use socat to establish a connection to the device, and offer a comport for the legacy software to connect to. 
 The syntax is as follows (replace [] with the corresponding values):
-socat -v pty,link=/home/[user]/tcptty0,raw tcp:[IP Address shown on display]:8843  
 
-you can then connect to /home/[user]/tcptty0 from your software.
+`socat -v pty,link=/home/[user]/tcptty0,raw tcp:[IP Address shown on display]:8843`
 
-### Windows
+Then, you can then connect to `/home/[user]/tcptty0` from your software.
+
+#### Windows:
+VSPE (Virtual Serial Port Emulator) is known to work pretty well. 
 https://www.youtube.com/watch?v=7g6v_m208LQ
