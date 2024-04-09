@@ -64,14 +64,15 @@ Serial software implementations should not notice the difference. Once connectio
 
 ## Building:
 
-Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.  
-Components:  
-1x ESP8266-01S module  
-2x 100uF (104) Capacitors  
-1x Diode  
-1x Switch  
-1x 5 pin connector, angled  
-1x 2x4 pin socket, angled, alternatively 2x4 pin socket, see both screenshots.  
+Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.
+Components:
+1x ESP8266-01S module
+1x AMS1117-3.3 regulator
+2x 100nF (104) capacitors
+1x 2N2222 transistor
+1x Switch
+1x 5 pins pin header, angled
+1x 2x4 pins socket
 
 
 ** Flashing:
