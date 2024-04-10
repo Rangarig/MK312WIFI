@@ -1,8 +1,6 @@
 # MK312 Wifi Bridge
 
-As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken.
-
-This Project is based on the ESP8266-01S and is a collaboration between Rangarig and cLx. This was created at first because the bluetooth interface could not be accessed in a convenient way on a VR headset.
+This Project is a replacement for the bluetooth module used on the MK312BT and is based on the ESP8266-01S. This was created at first because the bluetooth interface could not be accessed in a convenient way on a VR headset, but also because of a general lack of reliability of the link. As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken. This project is a collaboration between Rangarig and cLx.
 
 ## Contents
 | Directory      | Contains
@@ -24,6 +22,9 @@ You can see a connection by the radio LED lighting up and then flashing as commu
 Feel free to use the provided PCB layout for the connections. In case you want to build your own:
 Keep in mind that the VCC from the box is 5 volts, so you will need to convert that to 3.3V or you will burn your ESP module.
 The signal level from the box is already at 3.3 volts (as there is already a resistor bridge) so we don't really need to do anything else.
+
+![MK312 WiFi adapter schematics](media/schematics.png)
+
 Connections are:
 
 | ESP Pin#     | ESP Pin Name | In-between            | MK312 |
@@ -39,13 +40,12 @@ Connections are:
 The hardware serial port outputs a lot of garbage in the bootloader, that can confuse the MK312, so a software implementation is used that might make the used pin seem a bit odd.
 
 ## Firmware
-Upon first powerup, the device will go into an Access Point mode, which you can connect to with your cellphone, to connect it to your local wifi.
-The MK312 disply will show "WifiAP"
-Once a Wifi Connection is established, the device will display the IP Address on the LCD Display.
-In consequent powerups the device will reconnect to the WIFI Network that was configured. If you wish to change the network to use, press the config wifi button after powerup. (not during)
+Upon first powerup, the device will go into an Access Point mode (the MK312 display will show "WifiAP"), and you can connect to with your cellphone to configure the connection to your local wifi network. Once a WiFi connection is established, the device will display the IP obtained IP address on the LCD display. In consequent powerups the device will reconnect to the same wifi network. If you wish to change the network to use, press the config wifi button. The WifiAP mode is also automatically called if the configured network is not found after power up.
+
+![MK312BT with WiFi interface after power-on](media/mk312.jpg)
 
 The firmware will negotiate a key with the box, and then use that key continuously internally.
-You can send a UDP broadcast to port 8842 containing the string "MK312-ICQ" to have the device return its IP Address
+You can send a UDP broadcast to port 8842 containing the string "MK312-ICQ" to have the device return its IP address.
 You can then create a TCP connection to that IP Address on port 8843.
 
 ### Normal encrypted mode:
@@ -62,7 +62,8 @@ Serial software implementations should not notice the difference. Once connectio
 ## Building
 
 Please note that not all components need to be fitted to the front of the device. There are hints on PCB to what goes where.
-Components:
+
+![Ready to build?](media/building.jpg)
 
 |Qty| Component                 |
 |---|---------------------------|
@@ -76,8 +77,13 @@ Components:
 
 
 ## Flashing the firmware
-Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in **3.3 VOLTS MODE** or it will die.
-The ESP8266-01 can be programmed connected like this [TODO INSERT SCHEMATICS]
+
+Please keep in mind that the ESP8266-01 runs on 3.3 volts. So your serial adapter should be set in **3.3 VOLTS MODE** or the ESP will die.
+The ESP8266-01 can be programmed connected like this:
+
+![Simple possible way to flash with a USB-serial adapter](media/flashing_schematics.png)
+
+![USB-serial adapter connected to ESP-01 module](media/flashing.jpg)
 
 |Row 1|Pins|Row 2|
 |-----|----|-----|
@@ -88,18 +94,7 @@ The ESP8266-01 can be programmed connected like this [TODO INSERT SCHEMATICS]
 
 (ESP module top view, row 1 is closer to its board edge)
 
-To put the ESP into programming mode, keep PRG connected to ground, and make RST touch GND briefly to reset.
-
-Setting up the Arduino software: (it might work with newer versions, these are just the versions we developed things on)
-Install Arudino: https://www.arduino.cc/en/software (Version 1.8.19)
-Install Boardmanager: http://arduino.esp8266.com/stable/package_esp8266com_index.json (Version 3.0.2) [Generic ESP8266 module]
-(under 'file/preferences' add the path to "Additional Boards Manager URLs:", then close the dialog with okay, and select the board on "Tools / boardmanager")
-Install WifiManager: https://github.com/tzapu/WifiManager (version 2.0.5-beta)
-(Download the file, and add it to your libraries with Sketch/Include Library/Add. Zip library)
-
-Then close the application, reopen it and load the ino file.
-
-Once all is setup correctly, you should be able to compile the accompanied .ino and flash it to the device.
+To put the ESP into programming mode, keep IO0/PRG connected to ground. You can make RST touch GND briefly to force a reset (it is possible to use the RTS output of the USB serial adapter to do this automatically, but most of the time, this is not needed).
 
 Once the ESP is programmed and attached to the board you can put it into the MK312 bluetooth slot, please make sure its facing the right way.
 
@@ -119,6 +114,36 @@ Once negotiations are successful, the WIFI module will power up. On first startu
 Look for a network called 'MK312CONFIG-AP' and connect to it with your cellpone. Then set up the WIFI Parameters.
 The module will then connect to WIFI, and display its IP adress on the MK312's display.
 At this point it is ready to be connected to. The network settings are saved to be used automatically the next time the box is switched on.
+
+### Flashing the provided bin file:
+`$ esptool --chip esp8266 --port /dev/ttyUSB0 --baud 115200 write_flash 0x0 MK312Wifi.ino.bin
+esptool.py v3.0
+Serial port /dev/ttyUSB0
+Connecting....
+Chip is ESP8266EX
+Features: WiFi
+Crystal is 26MHz
+Uploading stub...
+Running stub...
+Stub running...
+Configuring flash size...
+Compressed 363184 bytes to 258186...
+Wrote 363184 bytes (258186 compressed) at 0x00000000 in 22.9 seconds (effective 126.8 kbit/s)...
+Hash of data verified.`
+
+(If you have installed the Arduino software, esptool can also be called by `python3 ~/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/esptool/esptool.py`)
+
+### Compiling and flashing from the source code with the Arduino software:
+Setting up the Arduino software: (it might work with newer versions, these are just the versions we developed things on)
+Install Arudino: https://www.arduino.cc/en/software (Version 1.8.19)
+Install Boardmanager: http://arduino.esp8266.com/stable/package_esp8266com_index.json (Version 3.0.2) [Generic ESP8266 module]
+(under 'file/preferences' add the path to "Additional Boards Manager URLs:", then close the dialog with okay, and select the board on "Tools / boardmanager")
+Install WifiManager: https://github.com/tzapu/WifiManager (version 2.0.5-beta)
+(Download the file, and add it to your libraries with Sketch/Include Library/Add. Zip library)
+
+Then close the application, reopen it and load the ino file.
+
+Once all is setup correctly, you should be able to compile the accompanied .ino and flash it to the device.
 
 ## Usage
 
@@ -142,3 +167,7 @@ Then, you can then connect to `/home/[user]/tcptty0` from your software.
 #### Windows:
 VSPE (Virtual Serial Port Emulator) is known to work pretty well.
 https://www.youtube.com/watch?v=7g6v_m208LQ
+
+## Bonus picture of a MK312 with the v1.1 WiFi bridge interface in the grass
+
+![MK312BT with WiFi interface in the grass](media/mk312_grass.jpg)
