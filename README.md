@@ -27,15 +27,15 @@ The signal level from the box is already at 3.3 volts (as there is already a res
 
 Connections are:
 
-| ESP Pin#     | ESP Pin Name | In-between            | MK312 |
-|--------------|--------------|-----------------------|-------|
-| 1            | GND          |                       | GND   |
-| 8            | VCC          | 3.3V regulator        | VCC   |
-| 4            | CHIP_EN      |                       |       |
-| 5            | GPIO0        |                       | RX    |
-| 3            | GPIO2        |                       | TX    |
-| 2            | GPIO1        |                       | STATE |
-| 7            | GPIO3        | AP mode switch to GND |       |
+| ESP Pin Name | In-between            | MK312 |
+|--------------|-----------------------|-------|
+| GND          |                       | GND   |
+| VCC          | 3.3V regulator        | VCC   |
+| CHIP_EN      |                       |       |
+| GPIO0        |                       | TX    |
+| GPIO2        |                       | RX    |
+| GPIO1        | NPN transistor        | STATE |
+| GPIO3        | AP mode switch to GND |       |
 
 The hardware serial port outputs a lot of garbage in the bootloader, that can confuse the MK312, so a software implementation is used that might make the used pin seem a bit odd.
 
@@ -116,7 +116,8 @@ The module will then connect to WIFI, and display its IP adress on the MK312's d
 At this point it is ready to be connected to. The network settings are saved to be used automatically the next time the box is switched on.
 
 ### Flashing the provided bin file:
-`$ esptool --chip esp8266 --port /dev/ttyUSB0 --baud 115200 write_flash 0x0 MK312Wifi.ino.bin
+```
+$ esptool --chip esp8266 --port /dev/ttyUSB0 --baud 115200 write_flash 0x0 MK312Wifi.ino.bin
 esptool.py v3.0
 Serial port /dev/ttyUSB0
 Connecting....
@@ -129,9 +130,10 @@ Stub running...
 Configuring flash size...
 Compressed 363184 bytes to 258186...
 Wrote 363184 bytes (258186 compressed) at 0x00000000 in 22.9 seconds (effective 126.8 kbit/s)...
-Hash of data verified.`
+Hash of data verified.
+```
 
-(If you have installed the Arduino software, esptool can also be called by `python3 ~/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/esptool/esptool.py`)
+(If you have installed the Arduino software, esptool can also be called with `python3 ~/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/esptool/esptool.py`)
 
 ### Compiling and flashing from the source code with the Arduino software:
 Setting up the Arduino software: (it might work with newer versions, these are just the versions we developed things on)
