@@ -15,7 +15,7 @@
 #define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
 #define COMM_PORT          8843 // main communication port in TCP
 
-#define LED_PIN               1 // cathode pin of the radio LED (we use TX, since the system will output garbage on start, and we do not want to confuse the mk312)
+#define LED_PIN               1 // radio LED of the mk312 (we use TX, since the system will output garbage on start, and we do not want to confuse the mk312)
 #define RX_PIN                0 // rx pin to be used by the software implementation
 #define RESET_WIFI_PIN        3 // The pin that needs to be pushed to ground to reset the wifi settings
 #define TX_PIN                2 // tx pin to be used by the software implementation
