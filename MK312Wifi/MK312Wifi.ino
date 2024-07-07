@@ -155,7 +155,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 // Establishes or reestablishes communication with the mk312 device
 void mk312_setup() {
   // Clear potential garbage from buffer
-  delay(10);
+  delay(200);
   while (mySerial.available() > 0) mySerial.read();
 
   byte rep = 0x00;
