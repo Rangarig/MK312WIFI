@@ -156,8 +156,6 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 void mk312_setup() {
   // Clear potential garbage from buffer
   delay(200);
-  while (mySerial.available() > 0) mySerial.read();
-
   byte rep = 0x00;
 
   byte attempts = 12;
@@ -178,7 +176,6 @@ void mk312_setup() {
   mk312write(0x2f); // Set key command
   mk312write(0x00); // To keep things simple we will use 00 as a key
   mk312write(0x2f); // Checksum (no key, so really just the commmand)
-  mySerial.flush(); // Send data
 
   rep = mk312read();
   byte boxkey = mk312read();
@@ -296,7 +293,6 @@ void handleTCPIP() {
             if ((val1 == 0x42) && (chk == 0x42)) {
               wifiEncryption = false;
               client.write(0x69); // Reply code, key accepted
-              client.flush();
               continue;
             }
 
@@ -312,6 +308,11 @@ void handleTCPIP() {
             client.write(response, 3);
             continue;
           }
+
+          // As the rest of the code is for communicating with the mk312,
+          // we're making sure serial reception buffer is empty
+          mySerial.flush();
+
           // Read byte command
           if (cmd == 0x3c) { // read byte command
             lo = wifiread(client);
