@@ -237,6 +237,29 @@ byte wifiread(WiFiClient client) {
     return client.read();
 }
 
+void handleLedBlinking(int setCount=-1) {
+  static unsigned long ledBlinkTimeout = 0;
+  static int ledCount = 0;
+  static bool ledState = false;
+
+  if (setCount != -1) {
+    ledCount = setCount;
+  }
+
+  if (!ledCount) {
+    setStatusLed(true);
+    ledState = true;
+    return;
+  }
+
+  if (millis() > ledBlinkTimeout) {
+    ledBlinkTimeout = millis() + 200;
+    ledCount--;
+    ledState = !ledState;
+    setStatusLed(ledState);
+  }
+}
+
 // Handles the incoming TCPIP requests
 void handleTCPIP() {
   byte cmd = 0; // conmmand read
@@ -247,29 +270,28 @@ void handleTCPIP() {
   byte rep = 0; // Reply byte
   byte readbuf[16]; // Read buffer for write byte passthrough
   long chksum = 0; // Checksum for readbuffer
-  bool status = false;
 
   WiFiClient client = wifiServer.available();
 
   if (client) {
     client.setNoDelay(true);
-    setStatusLed(true);
     wifiEncryption = true;
     wifikey = 0;
 
     while (client.connected()) {
+        handleLedBlinking();
+
         WiFiClient new_client = wifiServer.available();
         if (new_client) {
           client.stop();
           client = new_client;
           wifikey = 0;
+          handleLedBlinking(0);
         }
 
         // Check if a control message has been sent
         while (client.available() > 0) {
           cmd = wifiread(client);
-          status = !status;
-          setStatusLed(status);
 
           // Ping command is replied to with 07
           if (cmd == 0x00) {
@@ -342,6 +364,7 @@ void handleTCPIP() {
 
           // Write byte command implementation
           if ((cmd & 0x0f) == 0x0d) { // write byte command
+            handleLedBlinking(3);
             val1 = (cmd & 0xf0) >> 4; // Number of bytes to write
 
             hi = wifiread(client);
@@ -390,6 +413,7 @@ void handleTCPIP() {
     }
 
     client.stop();
+    setStatusLed(false);
   }
 }
 
@@ -403,6 +427,7 @@ void handleUDP() {
 
     if(strcmp(packetBuffer, "ICQ-MK312") == 0) {
       // send a reply, to the IP address and port that sent us the packet we received
+      setStatusLed(true);
       udp.beginPacket(udp.remoteIP(), udp.remotePort());
       IPAddress ip = WiFi.localIP();
       udp.write(ip[0]);
@@ -410,6 +435,7 @@ void handleUDP() {
       udp.write(ip[2]);
       udp.write(ip[3]);
       udp.endPacket(); // "flush" the output as we're sending the packet UDP now
+      setStatusLed(false);
     }
   }
 }
