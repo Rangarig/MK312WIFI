@@ -9,7 +9,7 @@
 #include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
 
-#define VERSION 1.2.02
+#define VERSION 1.2.03
 #define AP_NAME "MK312CONFIG-AP"
 
 #define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
@@ -155,22 +155,18 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 // Establishes or reestablishes communication with the mk312 device
 void mk312_setup() {
   // Clear potential garbage from buffer
-  delay(10);
-  while (mySerial.available() > 0) mySerial.read();
-
-  byte rep = 0x00;
+  delay(200);
 
   byte attempts = 12;
   while (attempts > 0) {
     attempts --;
-    mk312write(0x00); // Initiate handshake
     mySerial.flush();
+    mk312write(0x00); // Initiate handshake
     delay(1); // Give the system time to answer
-    rep = mk312read();
-    if (rep == 0x07) break;
+    if (mk312read() == 0x07) break;
   }
 
-  if (attempts == 0) errorstate(FAIL_HANDSHAKE_A); // Failed waiting for 7
+  if (attempts == 0) errorstate(FAIL_HANDSHAKE_A); // Failed, we did not obtained any 0x07 reply
 
   mk312key = 0x00;
 
@@ -178,9 +174,8 @@ void mk312_setup() {
   mk312write(0x2f); // Set key command
   mk312write(0x00); // To keep things simple we will use 00 as a key
   mk312write(0x2f); // Checksum (no key, so really just the commmand)
-  mySerial.flush(); // Send data
 
-  rep = mk312read();
+  byte rep = mk312read();
   byte boxkey = mk312read();
   byte check = mk312read();
 
@@ -192,17 +187,13 @@ void mk312_setup() {
 }
 
 void setup() {
-  // Check if WIFI needs a reset
   pinMode(RESET_WIFI_PIN, INPUT);
-
-  // Initialize serial
   pinMode(LED_PIN, OUTPUT);
 
+  // Setup communications with the MK312.
   mySerial.begin(19200);
   pinMode(TX_PIN, OUTPUT);
   pinMode(RX_PIN, INPUT); // For some reason the ESP insists on a pullup for the RX pin, which will then not be understood, so... we rectify that.
-
-  // Setup communications with the MK312
   mk312_setup();
 
   // Ready for incoming connections
@@ -246,6 +237,29 @@ byte wifiread(WiFiClient client) {
     return client.read();
 }
 
+void handleLedBlinking(int setCount=-1) {
+  static unsigned long ledBlinkTimeout = 0;
+  static int ledCount = 0;
+  static bool ledState = false;
+
+  if (setCount != -1) {
+    ledCount = setCount;
+  }
+
+  if (!ledCount) {
+    setStatusLed(true);
+    ledState = true;
+    return;
+  }
+
+  if (millis() > ledBlinkTimeout) {
+    ledBlinkTimeout = millis() + 200;
+    ledCount--;
+    ledState = !ledState;
+    setStatusLed(ledState);
+  }
+}
+
 // Handles the incoming TCPIP requests
 void handleTCPIP() {
   byte cmd = 0; // conmmand read
@@ -256,38 +270,37 @@ void handleTCPIP() {
   byte rep = 0; // Reply byte
   byte readbuf[16]; // Read buffer for write byte passthrough
   long chksum = 0; // Checksum for readbuffer
-  bool status = false;
 
-  WiFiClient client = wifiServer.available();
+  WiFiClient client = wifiServer.accept();
 
   if (client) {
     client.setNoDelay(true);
-    setStatusLed(true);
     wifiEncryption = true;
     wifikey = 0;
 
     while (client.connected()) {
-        WiFiClient new_client = wifiServer.available();
+        handleLedBlinking();
+
+        WiFiClient new_client = wifiServer.accept();
         if (new_client) {
           client.stop();
           client = new_client;
           wifikey = 0;
+          handleLedBlinking(0);
         }
 
         // Check if a control message has been sent
-        while (client.available()>0) {
+        while (client.available() > 0) {
           cmd = wifiread(client);
-          status = !status;
-          setStatusLed(status);
 
-          // ping command is replied to with 07
+          // Ping command is replied to with 07
           if (cmd == 0x00) {
             wifikey = 0;
             client.write(0x07);
             continue;
           }
 
-          // Set key command
+          // Intercept set key command and change the local key only, not the mk312 one
           if (cmd == 0x2f) { // Set key command
             val1 = wifiread(client);
             chk = wifiread(client);
@@ -296,12 +309,11 @@ void handleTCPIP() {
             if ((val1 == 0x42) && (chk == 0x42)) {
               wifiEncryption = false;
               client.write(0x69); // Reply code, key accepted
-              client.flush();
               continue;
             }
 
             if (chk != ((val1 + cmd) % 256)) {
-              client.write(0x07); // Reply code, key accepted
+              client.write(0x07); // Checksum error
               continue;
             }
             wifikey = val1 ^ 0x55;
@@ -312,6 +324,11 @@ void handleTCPIP() {
             client.write(response, 3);
             continue;
           }
+
+          // As the rest of the code is for communicating with the mk312,
+          // we're making sure serial reception buffer is empty
+          mySerial.flush();
+
           // Read byte command
           if (cmd == 0x3c) { // read byte command
             lo = wifiread(client);
@@ -330,15 +347,14 @@ void handleTCPIP() {
             mk312write_enc(chk);
 
             // Handle reply
-            byte rep = mk312read();
-            byte val1 = mk312read();
-            byte chk = mk312read();
+            rep = mk312read();
+            val1 = mk312read();
+            chk = mk312read();
 
-            // Verify reply
-            if (((rep + val1) % 256) != chk) {
-              client.write(0x07); // Wrong checksum
-              continue;
-            }
+            // in software version previous or equal than 1.2.02
+            // here was a checksum check, replying 0x07 in case of errors.
+            // this made code debugging more difficult and is removed for now,
+            // the checksum validity is also checked by the client application.
 
             uint8_t response[3] = {rep, val1, chk};
             client.write(response, 3);
@@ -346,8 +362,9 @@ void handleTCPIP() {
           }
 
           // Write byte command implementation
-          if ((cmd & 0x0F) == 0x0D) { // write byte command
-            val1 = (cmd & 0xF0) >> 4; // Number of bytes to write
+          if ((cmd & 0x0f) == 0x0d) { // write byte command
+            handleLedBlinking(3);
+            val1 = (cmd & 0xf0) >> 4; // Number of bytes to write
 
             hi = wifiread(client);
             lo = wifiread(client);
@@ -388,13 +405,14 @@ void handleTCPIP() {
             client.write(rep);
             continue;
           }
-          wifikey=0;
+
+          // unknown command?
           client.write(0x07);
-          continue;
         }
     }
 
     client.stop();
+    setStatusLed(false);
   }
 }
 
@@ -408,6 +426,7 @@ void handleUDP() {
 
     if(strcmp(packetBuffer, "ICQ-MK312") == 0) {
       // send a reply, to the IP address and port that sent us the packet we received
+      setStatusLed(true);
       udp.beginPacket(udp.remoteIP(), udp.remotePort());
       IPAddress ip = WiFi.localIP();
       udp.write(ip[0]);
@@ -415,6 +434,7 @@ void handleUDP() {
       udp.write(ip[2]);
       udp.write(ip[3]);
       udp.endPacket(); // "flush" the output as we're sending the packet UDP now
+      setStatusLed(false);
     }
   }
 }
