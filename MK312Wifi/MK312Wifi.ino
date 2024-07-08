@@ -351,11 +351,10 @@ void handleTCPIP() {
             val1 = mk312read();
             chk = mk312read();
 
-            // Verify reply
-            if (((rep + val1) % 256) != chk) {
-              client.write(0x07); // Wrong checksum
-              continue;
-            }
+            // in software version previous or equal than 1.2.02
+            // here was a checksum check, replying 0x07 in case of errors.
+            // this made code debugging more difficult and is removed for now,
+            // the checksum validity is also checked by the client application.
 
             uint8_t response[3] = {rep, val1, chk};
             client.write(response, 3);
