@@ -271,7 +271,7 @@ void handleTCPIP() {
   byte readbuf[16]; // Read buffer for write byte passthrough
   long chksum = 0; // Checksum for readbuffer
 
-  WiFiClient client = wifiServer.available();
+  WiFiClient client = wifiServer.accept();
 
   if (client) {
     client.setNoDelay(true);
@@ -281,7 +281,7 @@ void handleTCPIP() {
     while (client.connected()) {
         handleLedBlinking();
 
-        WiFiClient new_client = wifiServer.available();
+        WiFiClient new_client = wifiServer.accept();
         if (new_client) {
           client.stop();
           client = new_client;
