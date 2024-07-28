@@ -149,6 +149,7 @@ void wifi_setup() {
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) {
+  (void)myWiFiManager; // -Wunused-parameter
   writeText("WifiAP");
 }
 
