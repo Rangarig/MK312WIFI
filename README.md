@@ -96,6 +96,8 @@ The ESP8266-01 can be programmed connected like this:
 
 To put the ESP into programming mode, keep IO0/PRG connected to ground. You can make RST touch GND briefly to force a reset (it is possible to use the RTS output of the USB serial adapter to do this automatically, but most of the time, this is not needed).
 
+Webserver feature need data to be uploaded on the ESP module. You can add [this tool](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) in the Arduino interface.
+
 Once the ESP is programmed and attached to the board you can put it into the MK312 bluetooth slot, please make sure its facing the right way.
 
 Once the ESP Powers up, it will immediately try to negotiate with the MK312. If that fails, it will show an error message on the message LED:
@@ -115,7 +117,7 @@ Look for a network called 'MK312CONFIG-AP' and connect to it with your cellpone.
 The module will then connect to WIFI, and display its IP adress on the MK312's display.
 At this point it is ready to be connected to. The network settings are saved to be used automatically the next time the box is switched on.
 
-### Flashing the provided bin file:
+### Flashing the provided bin files:
 ```
 $ esptool --chip esp8266 --port /dev/ttyUSB0 --baud 115200 write_flash 0x0 MK312Wifi.ino.bin
 esptool.py v3.0
@@ -131,6 +133,12 @@ Configuring flash size...
 Compressed 363184 bytes to 258186...
 Wrote 363184 bytes (258186 compressed) at 0x00000000 in 22.9 seconds (effective 126.8 kbit/s)...
 Hash of data verified.
+```
+
+Then the same for the webserver files, the difference is the destination address:
+
+```
+$ esptool --chip esp8266 --port /dev/ttyUSB0 --baud 115200 write_flash 0xEB000 MK312Wifi.mklittlefs.bin
 ```
 
 (If you have installed the Arduino software, esptool can also be called with `python3 ~/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/esptool/esptool.py`)
