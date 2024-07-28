@@ -8,8 +8,11 @@
 #include <SoftwareSerial.h>
 #include <WiFiManager.h>        // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
+#include <WebSocketsServer.h>   // https://github.com/Links2004/arduinoWebSockets
+#include <FS.h>
+#include <LittleFS.h>
 
-#define VERSION 1.2.03
+#define VERSION 1.2.04
 #define AP_NAME "MK312CONFIG-AP"
 
 #define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
@@ -203,6 +206,7 @@ void setup() {
   char s[17];
   sprintf(s, ">%i.%i.%i.%i", ip[0],ip[1],ip[2],ip[3]);
   writeText(s);
+  webservers_setup();
 }
 
 // Checks if the AP button is pressed
@@ -218,6 +222,7 @@ void checkForAP() {
 void loop() {
   handleUDP();
   handleTCPIP();
+  handleWebservers();
   checkForAP();
 }
 
@@ -438,4 +443,167 @@ void handleUDP() {
       setStatusLed(false);
     }
   }
+}
+
+/************************************************************************
+ * All the following code is for implementing web and websocker servers *
+ ************************************************************************/
+
+#define CONFIG_LITTLEFS_SPIFFS_COMPAT 1
+
+ESP8266WebServer webserver(80);
+WebSocketsServer websocketserver(81);
+
+void webservers_setup() {
+  webserver.on("/EXEC", handleHttpGetEXEC);
+  webserver.on("/RAW", handleHttpGetRAW);
+
+  webserver.onNotFound([](){
+    if(!handleFileRead(webserver.uri()))
+      webserver.send(404, "text/plain", "FileNotFound");
+  });
+
+  LittleFS.begin();
+  webserver.begin();
+  websocketserver.begin();
+  websocketserver.onEvent(websocketevent);
+}
+
+void handleWebservers() {
+  websocketserver.loop();
+  webserver.handleClient();
+}
+
+bool handleFileRead(String path){
+  if (path.endsWith("/")) path += "index.html";
+  if (LittleFS.exists(path)){
+    File file = LittleFS.open(path, "r");
+    webserver.streamFile(file, getContentType(path));
+    file.close();
+    return true;
+  }
+  return false;
+}
+
+void handleHttpGetRAW() {
+  handleHttpGetBase(true);
+}
+
+void handleHttpGetEXEC() {
+  handleHttpGetBase(false);
+}
+
+void handleHttpGetBase(bool raw) {
+  String res = "ERR";
+
+  if(webserver.hasArg("cmd")) {
+    String cmd = webserver.arg("cmd");
+
+    String val = "";
+    if(webserver.hasArg("val")) {
+      val = webserver.arg("val");
+    }
+
+    if(raw) {
+      poker(str2hex(cmd.c_str()), str2hex(val.c_str())); res="OK";
+    }
+    else {
+      res = websocket_parse_cmd(cmd, val) ?"OK":"ERR";
+    }
+  }
+
+  webserver.send(200, "text/plain", res);
+}
+
+String getContentType(String filename){
+    if(filename.endsWith(".html")) return "text/html";
+    else if(filename.endsWith(".css")) return "text/css";
+    else if(filename.endsWith(".js")) return "application/javascript";
+    return "text/plain";
+}
+
+void websocketevent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  if(type == WStype_CONNECTED) {
+    handleLedBlinking(0);
+    IPAddress ip = websocketserver.remoteIP(num);
+    String message = ip.toString() + String(" connected.");
+    websocketserver.broadcastTXT(message);
+  }
+
+  if (type == WStype_TEXT) {
+    String key = "";
+    String val = "";
+    bool bval = false;
+
+    for (size_t x = 0; x < length; x++) {
+      if (((char)payload[x]) == '=') {
+        bval = true;
+        continue;
+      }
+
+      if (bval) {
+        val+=(char)payload[x];
+      }
+      else {
+        key+=(char)payload[x];
+      }
+    }
+
+    // send response to all connected clients
+    String res = key;
+    if (val != "") { res+="="+val; }
+    res+= websocket_parse_cmd(key, val) ?" OK":" ERR";
+    websocketserver.broadcastTXT(res);
+  }
+}
+
+bool websocket_parse_cmd(String cmd, String val) {
+  // todo: validate input vals
+  // todo: possibility to read the current values
+  // todo: websockets client should handle broadcasted messages to them
+  if (cmd == "startRamp")        poker(0x4070, 0x21);
+  else if(cmd == "CutLevels")    cutLevels(val.toInt());
+  else if(cmd == "EnableADC")    enableADC(val.toInt());
+  else if(cmd == "DisableADC")   enableADC(!val.toInt());
+  else if(cmd == "LevelA")       poker(0x4064, val.toInt());
+  else if(cmd == "LevelB")       poker(0x4065, val.toInt());
+  else if(cmd == "MultiAdjust") {
+    //  multiadust_scaled based on minimal and maximal ranges values
+    int ma_min = peeker(0x4086); // eg. 15, right position
+    int ma_max = peeker(0x4087); // eg. 127, left position;
+    int ma_newval = ma_max - (val.toFloat() * 0.01 * (float)(ma_max - ma_min));
+    if (ma_newval > ma_max) ma_newval = ma_max;
+    else if (ma_newval < ma_min) ma_newval = ma_min;
+    poker(0x420d, ma_newval);
+  }
+  else if(cmd == "Mode") {
+    poker(0x407b,str2hex(val.c_str()));
+    poker(0x4070,0x4);
+    poker(0x4070,0x12); // execute mode
+  }
+  else {
+    return false;
+  }
+
+  handleLedBlinking(3);
+  return true;
+}
+
+void cutLevels(bool enabled) {
+  if (enabled) {
+    enableADC(false);
+    poker(0x4064, 0);
+    poker(0x4065, 0);
+  }
+  else {
+    enableADC(true);
+  }
+}
+
+void enableADC(bool enabled) {
+  poker(0x400f, enabled?0x00:0x01);
+}
+
+int str2hex(const char str[]) {
+  return (int)strtol(str, 0, 16);
 }
