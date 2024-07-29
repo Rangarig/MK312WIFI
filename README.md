@@ -1,6 +1,6 @@
 # MK312 Wifi Bridge
 
-This Project is a replacement for the bluetooth module used on the MK312BT and is based on the ESP8266-01S. This was created at first because the bluetooth interface could not be accessed in a convenient way on a VR headset, but also because of a general lack of reliability of the link. As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken. This project is a collaboration between Rangarig and cLx.
+This Project is a replacement for the bluetooth module used on the MK312BT and is based on the ESP8266-01S. This was created at first because the bluetooth interface could not be accessed in a convenient way on a VR headset, but also because of a general lack of reliability of the link. As usual no guarantees can be given, and also if you use this to injure yourself, no responsibility can be taken. This project is a collaboration between Rangarig and cLx. Some code has been imported back from [timdev](https://github.com/timduru/MK312WIFI/commits/timdev/) branch.
 
 ## Contents
 | Directory      | Contains
@@ -14,7 +14,7 @@ This WiFi interface is pin to pin compatible to the bluetooth interface, and des
 Included is an example C# implementation, that can be used in a unity project. Most existing implementations should be really easy to adapt to this WiFi version.
 
 To make things configuration free the firmware replies to specific broadcast UDP packet, so the software can automatically determine the IP address of the interface.
-A single TCP port is used for the actual communication with the device. At any time, only one client can be connected.
+A single TCP port is used for the actual communication with the device. At any time, only one client can be connected. You can also use the web interface for simple control.
 
 You can see a connection by the radio LED lighting up and then flashing as communication is in progress.
 
@@ -96,8 +96,6 @@ The ESP8266-01 can be programmed connected like this:
 
 To put the ESP into programming mode, keep IO0/PRG connected to ground. You can make RST touch GND briefly to force a reset (it is possible to use the RTS output of the USB serial adapter to do this automatically, but most of the time, this is not needed).
 
-Webserver feature need data to be uploaded on the ESP module. You can add [this tool](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) in the Arduino interface.
-
 Once the ESP is programmed and attached to the board you can put it into the MK312 bluetooth slot, please make sure its facing the right way.
 
 Once the ESP Powers up, it will immediately try to negotiate with the MK312. If that fails, it will show an error message on the message LED:
@@ -153,6 +151,8 @@ Install WifiManager: https://github.com/tzapu/WifiManager (version 2.0.5-beta)
 
 Then close the application, reopen it and load the ino file.
 
+HTTP and websocket servers feature need files under data/ to be uploaded on the ESP module. You can add [this tool](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) in the Arduino interface.
+
 Once all is setup correctly, you should be able to compile the accompanied .ino and flash it to the device.
 
 ## Usage
@@ -177,6 +177,22 @@ Then, you can then connect to `/home/[user]/tcptty0` from your software.
 #### Windows:
 VSPE (Virtual Serial Port Emulator) is known to work pretty well.
 https://www.youtube.com/watch?v=7g6v_m208LQ
+
+### Using the web and websocket interface:
+There is a websocket server running on port 81, for simple control. Message format is `<command>=<argument>`. A HTTP webserver on port 80 is also serving html/css/js page using it, but also responding to GET requests `/EXEC?cmd=<command>&val=<argument>` or `/RAW?cmd=<address>&val=<byte>`.
+
+Implemented commands are:
+
+| Command     | Argument                                    |
+|-------------|---------------------------------------------|
+| Mode        | 0x76 to 0x8e for the differents modes       |
+| DisableADC  | 1 to override pots, 0 to reenable them      |
+| EnableADC   | 1 to restore pots, 0 to override them       |
+| LevelA      | 0 to 255 (DisableADC=1 is needed before)    |
+| LevelB      | 0 to 255 (same)                             |
+| startRamp   | No argument needed for this command         |
+| CutLevels   | 1 to set both channels levels to zero       |
+| MultiAdjust | 0 to 100 (scaled in the current mode range) |
 
 ## Bonus picture of a MK312 with the v1.1 WiFi bridge interface in the grass
 
