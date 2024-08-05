@@ -214,6 +214,7 @@ void checkForAP() {
     bool resetWifi = !digitalRead(RESET_WIFI_PIN);
     if (resetWifi) {
       writeText("WifiAP");
+      webservers_stop();
       WiFiManager wifiManager;
       wifiManager.startConfigPortal(AP_NAME);
     }
@@ -467,6 +468,12 @@ void webservers_setup() {
   webserver.begin();
   websocketserver.begin();
   websocketserver.onEvent(websocketevent);
+}
+
+void webservers_stop() {
+  webserver.close();
+  webserver.stop();
+  websocketserver.close();
 }
 
 void handleWebservers() {
