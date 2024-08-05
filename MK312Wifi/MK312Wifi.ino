@@ -215,7 +215,7 @@ void checkForAP() {
     if (resetWifi) {
       writeText("WifiAP");
       WiFiManager wifiManager;
-      wifiManager.startConfigPortal("OnDemandAP");
+      wifiManager.startConfigPortal(AP_NAME);
     }
 }
 
