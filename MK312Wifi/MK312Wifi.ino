@@ -12,7 +12,7 @@
 #include <FS.h>
 #include <LittleFS.h>
 
-#define VERSION 1.2.04
+#define VERSION 1.2.05
 #define AP_NAME "MK312CONFIG-AP"
 
 #define UDP_DISCOVERY_PORT 8842 // UDP port to listen to, so devices can find the interface by sending a broadcast packet
