@@ -220,13 +220,6 @@ void checkForAP() {
     }
 }
 
-void loop() {
-  handleUDP();
-  handleTCPIP();
-  handleWebservers();
-  checkForAP();
-}
-
 bool wifiEncryption = false; // Do we use encryption on wifi side?
 
 // Waits for a byte from wifi and returns it
@@ -244,18 +237,20 @@ byte wifiread(WiFiClient client) {
     return client.read();
 }
 
-void handleLedBlinking(int setCount=-1) {
+void handleLedBlinking(int setCount=-1, bool wantedFinalLedState=false) {
   static unsigned long ledBlinkTimeout = 0;
   static int ledCount = 0;
   static bool ledState = false;
+  static bool finalLedState = false;
 
   if (setCount != -1) {
     ledCount = setCount;
+    finalLedState = wantedFinalLedState;
   }
 
   if (!ledCount) {
-    setStatusLed(true);
-    ledState = true;
+    setStatusLed(finalLedState);
+    ledState = finalLedState;
     return;
   }
 
@@ -265,6 +260,14 @@ void handleLedBlinking(int setCount=-1) {
     ledState = !ledState;
     setStatusLed(ledState);
   }
+}
+
+void loop() {
+  handleUDP();
+  handleTCPIP();
+  handleWebservers();
+  checkForAP();
+  handleLedBlinking();
 }
 
 // Handles the incoming TCPIP requests
@@ -293,7 +296,7 @@ void handleTCPIP() {
           client.stop();
           client = new_client;
           wifikey = 0;
-          handleLedBlinking(0);
+          handleLedBlinking(0, true);
         }
 
         // Check if a control message has been sent
@@ -370,7 +373,7 @@ void handleTCPIP() {
 
           // Write byte command implementation
           if ((cmd & 0x0f) == 0x0d) { // write byte command
-            handleLedBlinking(3);
+            handleLedBlinking(3, true);
             val1 = (cmd & 0xf0) >> 4; // Number of bytes to write
 
             hi = wifiread(client);
@@ -419,7 +422,7 @@ void handleTCPIP() {
     }
 
     client.stop();
-    setStatusLed(false);
+    handleLedBlinking(0, false);
   }
 }
 
@@ -433,7 +436,7 @@ void handleUDP() {
 
     if(strcmp(packetBuffer, "ICQ-MK312") == 0) {
       // send a reply, to the IP address and port that sent us the packet we received
-      setStatusLed(true);
+      handleLedBlinking(1, false);
       udp.beginPacket(udp.remoteIP(), udp.remotePort());
       IPAddress ip = WiFi.localIP();
       udp.write(ip[0]);
@@ -441,7 +444,6 @@ void handleUDP() {
       udp.write(ip[2]);
       udp.write(ip[3]);
       udp.endPacket(); // "flush" the output as we're sending the packet UDP now
-      setStatusLed(false);
     }
   }
 }
@@ -531,7 +533,7 @@ String getContentType(String filename){
 
 void websocketevent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   if(type == WStype_CONNECTED) {
-    handleLedBlinking(0);
+    handleLedBlinking(0, true);
     IPAddress ip = websocketserver.remoteIP(num);
     String message = ip.toString() + String(" connected.");
     websocketserver.broadcastTXT(message);
@@ -592,7 +594,7 @@ bool websocket_parse_cmd(String cmd, String val) {
     return false;
   }
 
-  handleLedBlinking(3);
+  handleLedBlinking(3, true);
   return true;
 }
 
