@@ -1,54 +1,135 @@
 body {
-	padding: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-top: 10px;
+	margin: 0;
 	color: white;
 	background: black;
 	font-family: Arial;
 }
 
-a:link {
+a:link, a:visited {
 	color: #c0c0ff;
-}
-a:visited {
-	color: #c0c0ff;
-}
-
-#shower {
-	background:#9d9d00;
 }
 
 #interrog {
+	float: right;
+	padding-right: 10px;
+	font-weight: bold;
 	text-align: right;
-	color: yellow;
+	color: black;
 }
 
 #help {
 	display: none;
 	background: #005b5b;
-	border-radius: 15px;
+	border-radius: 10px;
 	padding: 5px;
 	margin-bottom: 20px;
 }
 
-#submenu {
-	background: #5b5b5b;
+.underlined {
+	text-decoration: underline;
+	color: #c0c0ff;
 }
 
-#submenu span {
+.slidersContainer {
+	background: #5b5b5b;
+	border-radius: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.submenu {
+	background: #5b5b5b;
+	text-align: center;
+	padding: 5px;
+	overflow: visible;
+	border-radius: 10px;
+}
+
+.shower {
+	background: #ffff00;
+	color: white;
+	border-radius: 10px;
+	vertical-align: bottom;
+	line-height: normal;
+}
+
+#currentEffect, #titleDecoration {
+	color: black;
+	text-align: center;
+	height: 30px;
+	line-height: 30px;
+	font-size: 20px;
+	margin: 0px;
+}
+
+.modeButton, .clickButton, .toggleButton {
+	display: inline-block;
+	width: 16%;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	padding: 10px;
+	font-size: 20px;
+	cursor: pointer;
+	border-radius: 10px;
 	background: rgba(0,0,0,0.4);
 	text-align: center;
 	color: #feffde;
 }
 
-@media only screen and (min-width: 800px) {  /* for PC */
-	#topContainer {
+@media only screen and (max-width: 700px) {
+	.modeButton {
+		font-size: 13px;
+		width: 13%;
+	}
+	.clickButton, .toggleButton {
+		font-size: 15px;
+	}
+}
+@media only screen and (min-width: 1100px) {
+	.modeButton {
+		font-size: 20px;
+		width: 17%;
+	}
+}
+
+@media only screen and (max-width: 1000px) {  /* for mobiles */
+	.rangeBlock {
+		margin-top: 10px;
 		width: 100%;
-		display: flex;
+	}
+
+	.toggleButton, .clickButton {
+		width: 25%;
+	}
+
+	.range {
+		margin-top: 0px;
+		margin-bottom: 0px;
+		width: 100%;
+		height: 50px;
+		margin-left: 0;
+		background: transparent;
+		color: transparent;
+	}
+}
+
+@media only screen and (min-width: 1000px) {  /* for PC */
+	#topButtons {
+		width: 40%;
+	}
+
+	.toggleButton, .clickButton {
+		width: 25%;
+		font-size: 12px;
+		margin: 0;
 	}
 
 	.slidersContainer {
-		background: #5b5b5b;
-		border-radius: 15px;
-		display: inline-flex;
+		display: flex;
+		border-radius: 10px;
 		flex-direction: row;
 		flex-basis: 100%;
 		margin-bottom: 20px;
@@ -58,22 +139,9 @@ a:visited {
 	}
 
 	.rangeBlock {
-		width: 80%;
-		margin-left: 5%;
-	}
-
-	.buttons {
-		display: inline-flex;
-		flex-direction: column;
-		width: 100%;
-		height: 30%;
-		margin-left: 5%;
-	}
-
-	.button {
-		margin: 2px 2px 2px 2px;
-		width: 100%;
-		margin-left: 0;
+		margin-bottom: auto;
+		width: 25%;
+		margin-left: 1em;
 	}
 
 	.range {
@@ -107,16 +175,16 @@ a:visited {
 	input[type=range]::-moz-range-track {
 		height: 6px;
 		cursor: pointer;
-		background: #817d4b;
+		background: #817dff;
 		border-radius: 4px;
 		border: 1px solid #010101;
 	}
 
 	.rangeValue {
 		height: 20px; width:28px;
-		color:white;
+		color: white;
 		margin-top: -50px;
-		background: #4b4b4b;
+		background: #ff4b4b;
 		text-align: center;
 		line-height: 28px;
 		opacity: 0;
@@ -132,52 +200,3 @@ a:visited {
 		border-right: 14px solid transparent;
 	}
 }
-
-@media only screen and (max-width: 800px) {  /* for mobiles */
-	.rangeBlock {
-		margin-top: 20px;
-		width: 100%;
-	}
-
-	.range {
-		margin-top: 5px;
-		margin-bottom: 5px;
-		width: 100%;
-		margin-left: 0;
-		background: transparent;
-		color: transparent;
-	}
-}
-
-#currentEffect {
-	text-align: center;
-	margin: 0 0 -2px 0;
-	height: 30px;
-	line-height: 30px;
-	font-size: 20px;
-	font-family: Verdana;
-}
-
-#submenu {
-	display: flex;
-	flex-direction: column;
-	width: 100%;
-	position: relative;
-	left: 0;
-	z-index: 5;
-	transition: .4s;
-	overflow: auto;
-	height: 400px;
-	box-shadow: 0px 2px 5px black;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 3px;
-}
-
-#submenu span {
-	margin: 1px;
-	padding: 3px;
-	font-size: 17px;
-	cursor: pointer;
-}
-
-

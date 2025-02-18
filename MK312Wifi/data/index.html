@@ -7,19 +7,17 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<div id="interrog">
-			<a onclick="displayHelp()">?</a>
-		</div>
 		<div id="help"><p>
-			This is the WebSocket interface. For more advanced control of the MK-312, you can use a GUI using direct connection like <a href="https://github.com/clxjaguar/mk312-gui/">this one</a>. More information on the <a href="https://github.com/Rangarig/MK312WIFI/">MK312Wifi project page</a>. The WebSocket interface also can be used as a more standard way in third party softwares. Have fun! <a onclick="closeHelp()">(click to hide)</a></p>
+			This is the WebSocket interface. For more advanced control of the MK-312, you can use a GUI using direct connection like <a href="https://github.com/cLxJaguar/mk312-gui/">this one</a>. More information on the <a href="https://github.com/Rangarig/MK312WIFI/">MK312Wifi project page</a>. The WebSocket interface also can be used as a more standard way in third party softwares. Have fun! (<a class="underlined" onclick="closeHelp()">hide this</a>)</p>
 		</div>
 
-		<div id="topContainer">
+		<div class="shower">
+			<p id="titleDecoration">MK312 Remote Control<a id="interrog" onclick="displayHelp()">?</a></p>
 			<div id="Sliders" class="slidersContainer">
-				<input type="checkbox" id="DisableADC" onclick="exec(this,this.checked?1:0)">Override Levels
-				<input type="checkbox" id="CutLevels" onclick="exec(this,this.checked?1:0)">Cut Levels
-				<div id="Buttons" class="buttons">
-					<button id="startRamp" class="button" onclick="exec(this)">Start Ramp</button>
+				<div id="topButtons" class="submenu">
+					<span name="DisableADC" id="DisableADC" class="toggleButton">Override<br>Levels</span>
+					<span name="CutLevels" id="CutLevels" class="toggleButton">Cut<br>Levels</span>
+					<span name="startRamp" id="startRamp" class="clickButton">Start<br>Ramp</span>
 				</div>
 
 				<div class="rangeBlock">
@@ -39,36 +37,38 @@
 			</div>
 		</div>
 
-		<div id="shower" class="">
-			<div id="showedBlock">
-				<p id="currentEffect"></p>
-				<div id="submenu">
-					<span name="0x76">Waves</span>
-					<span name="0x77">Stroke</span>
-					<span name="0x78">Climb</span>
-					<span name="0x79">Combo</span>
-					<span name="0x7a">Intense</span>
-					<span name="0x7b">Rythm</span>
-					<span name="0x7c">Audio1</span>
-					<span name="0x7d">Audio2</span>
-					<span name="0x7e">Audio3</span>
-					<span name="0x7f">Split</span>
-					<span name="0x80">Random1</span>
-					<span name="0x81">Random2</span>
-					<span name="0x82">Toggle</span>
-					<span name="0x83">Orgasm</span>
-					<span name="0x84">Torment</span>
-					<span name="0x85">Phase1</span>
-					<span name="0x86">Phase2</span>
-					<span name="0x87">Phase3</span>
-					<span name="0x88">User1</span>
-					<span name="0x89">User2</span>
-					<span name="0x8a">User3</span>
-					<span name="0x8b">User4</span>
-					<span name="0x8c">User5</span>
-					<span name="0x8d">User6</span>
-					<span name="0x8e">User7</span>
-				</div>
+		<div class="shower">
+			<p id="currentEffect">Mode Selection</p>
+			<div class="submenu">
+				<span name="0x76" class="modeButton">Waves</span>
+				<span name="0x77" class="modeButton">Stroke</span>
+				<span name="0x78" class="modeButton">Climb</span>
+				<span name="0x79" class="modeButton">Combo</span>
+				<span name="0x82" class="modeButton">Toggle</span>
+				<br>
+				<span name="0x7a" class="modeButton">Intense</span>
+				<span name="0x7b" class="modeButton">Rythm</span>
+				<span name="0x7f" class="modeButton">Split</span>
+				<span name="0x83" class="modeButton">Orgasm</span>
+				<span name="0x84" class="modeButton">Torment</span>
+				<br>
+				<span name="0x80" class="modeButton">Random1</span>
+				<span name="0x81" class="modeButton">Random2</span>
+				<span name="0x85" class="modeButton">Phase1</span>
+				<span name="0x86" class="modeButton">Phase2</span>
+				<span name="0x87" class="modeButton">Phase3</span>
+				<br>
+				<span name="0x7c" class="modeButton">Audio1</span>
+				<span name="0x7d" class="modeButton">Audio2</span>
+				<span name="0x7e" class="modeButton">Audio3</span>
+				<span name="0x88" class="modeButton">User1</span>
+				<span name="0x89" class="modeButton">User2</span>
+				<br>
+				<span name="0x8a" class="modeButton">User3</span>
+				<span name="0x8b" class="modeButton">User4</span>
+				<span name="0x8c" class="modeButton">User5</span>
+				<span name="0x8d" class="modeButton">User6</span>
+				<span name="0x8e" class="modeButton">User7</span>
 			</div>
 		</div>
 	</body>
